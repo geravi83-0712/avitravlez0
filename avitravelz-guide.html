@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AviTravelz: Award Travel Guide</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f9ff;
+      color: #1e293b;
+      min-height: 100vh;
+      padding: 12px;
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+
+    /* Brand */
+    .brand-bar {
+      background: #0c4a6e;
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .brand-icon { width: 46px; height: 46px; border-radius: 12px; background: #0ea5e9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .brand-icon i { font-size: 24px; color: #fff; }
+    .brand-title { font-size: 20px; font-weight: 800; color: #fff; }
+    .brand-sub { font-size: 12px; color: #7dd3fc; margin-top: 2px; }
+    .lang-toggle { margin-left: auto; display: flex; gap: 6px; flex-shrink: 0; }
+    .lang-btn { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 2px solid transparent; }
+    .lang-btn.active { background: #0ea5e9; color: #fff; border-color: #0ea5e9; }
+    .lang-btn.inactive { background: transparent; color: #7dd3fc; border-color: #164e63; }
+
+    /* Progress */
+    .progress-bar {
+      background: #fff;
+      border: 1px solid #bae6fd;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+    .progress-track { display: flex; align-items: center; gap: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+    .progress-track::-webkit-scrollbar { display: none; }
+    .step-node {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      flex-shrink: 0; cursor: pointer; width: 90px;
+    }
+    .step-circle {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 800;
+      border: 2px solid #e2e8f0; background: #f8fafc; color: #94a3b8;
+      transition: all 0.2s;
+    }
+    .step-circle.done { background: #0c4a6e; border-color: #0c4a6e; color: #fff; }
+    .step-circle.active { background: #0ea5e9; border-color: #0ea5e9; color: #fff; box-shadow: 0 0 0 4px #bae6fd; }
+    .step-label { font-size: 9px; font-weight: 600; color: #94a3b8; text-align: center; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.3; }
+    .step-label.active { color: #0ea5e9; }
+    .step-label.done { color: #0c4a6e; }
+    .connector { flex: 1; height: 2px; background: #e2e8f0; min-width: 8px; }
+    .connector.done { background: #0c4a6e; }
+    .progress-pct { font-size: 11px; color: #94a3b8; text-align: right; margin-top: 8px; }
+
+    /* Main card */
+    .main-card {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #bae6fd;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .card-top {
+      background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .step-icon-big {
+      width: 52px; height: 52px; border-radius: 14px; background: rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .step-icon-big i { font-size: 26px; color: #fff; }
+    .step-num-label { font-size: 11px; font-weight: 700; color: #7dd3fc; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+    .step-title { font-size: 20px; font-weight: 800; color: #fff; line-height: 1.2; }
+    .step-subtitle { font-size: 13px; color: #bae6fd; margin-top: 4px; }
+    .card-body { padding: 20px 24px; }
+
+    /* Content blocks */
+    .big-idea {
+      background: #f0f9ff; border-left: 4px solid #0ea5e9;
+      border-radius: 0 10px 10px 0; padding: 12px 16px;
+      font-size: 15px; font-weight: 600; color: #0c4a6e;
+      margin-bottom: 18px; line-height: 1.5;
+    }
+
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .info-box {
+      border-radius: 12px; padding: 14px;
+      border: 1px solid transparent;
+    }
+    .info-box.teal { background: #f0f9ff; border-color: #bae6fd; }
+    .info-box.green { background: #f0fdf4; border-color: #bbf7d0; }
+    .info-box.amber { background: #fffbeb; border-color: #fde68a; }
+    .info-box.red { background: #fff1f2; border-color: #fecdd3; }
+    .info-box.purple { background: #faf5ff; border-color: #e9d5ff; }
+    .info-box-icon { font-size: 22px; margin-bottom: 6px; }
+    .info-box-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .info-box.teal .info-box-title { color: #0c4a6e; }
+    .info-box.green .info-box-title { color: #065f46; }
+    .info-box.amber .info-box-title { color: #92400e; }
+    .info-box.red .info-box-title { color: #9f1239; }
+    .info-box.purple .info-box-title { color: #5b21b6; }
+    .info-box-text { font-size: 12px; color: #475569; line-height: 1.5; }
+
+    .example-box {
+      background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;
+      padding: 14px 16px; margin-bottom: 14px;
+    }
+    .example-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #059669; margin-bottom: 6px; }
+    .example-text { font-size: 13px; color: #134e4a; line-height: 1.6; }
+    .example-text strong { color: #065f46; }
+
+    .tip-box {
+      background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px;
+      padding: 12px 14px; margin-bottom: 14px; display: flex; gap: 10px;
+    }
+    .tip-box i { font-size: 18px; color: #d97706; flex-shrink: 0; margin-top: 1px; }
+    .tip-text { font-size: 13px; color: #78350f; line-height: 1.5; }
+
+    .warn-box {
+      background: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px;
+      padding: 12px 14px; margin-bottom: 14px; display: flex; gap: 10px;
+    }
+    .warn-box i { font-size: 18px; color: #e11d48; flex-shrink: 0; margin-top: 1px; }
+    .warn-text { font-size: 13px; color: #9f1239; line-height: 1.5; }
+
+    /* Spend category list */
+    .cat-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .cat-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #f8fafc; border-radius: 10px; }
+    .cat-icon { font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; }
+    .cat-name { font-size: 13px; font-weight: 600; flex: 1; color: #1e293b; }
+    .cat-mult { font-size: 13px; font-weight: 800; color: #0ea5e9; flex-shrink: 0; }
+    .cat-pts { font-size: 11px; color: #94a3b8; flex-shrink: 0; min-width: 80px; text-align: right; }
+
+    /* Points calculator */
+    .calc-box { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+    .calc-title { font-size: 13px; font-weight: 700; color: #0c4a6e; margin-bottom: 10px; }
+    .calc-input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .calc-input-row label { font-size: 12px; color: #475569; flex-shrink: 0; }
+    .calc-input-row input { flex: 1; padding: 8px 12px; border: 1.5px solid #bae6fd; border-radius: 8px; font-size: 14px; font-weight: 700; background: #fff; color: #0c4a6e; }
+    .calc-results { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .calc-result { border-radius: 10px; padding: 10px; text-align: center; }
+    .calc-result.bad { background: #fff1f2; }
+    .calc-result.ok { background: #fffbeb; }
+    .calc-result.great { background: #f0fdf4; }
+    .calc-result-val { font-size: 18px; font-weight: 800; }
+    .calc-result.bad .calc-result-val { color: #e11d48; }
+    .calc-result.ok .calc-result-val { color: #d97706; }
+    .calc-result.great .calc-result-val { color: #059669; }
+    .calc-result-lbl { font-size: 10px; color: #64748b; margin-top: 2px; }
+
+    /* Steps list */
+    .steps-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .step-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px; background: #f8fafc; border-radius: 10px; }
+    .step-item-num { width: 26px; height: 26px; border-radius: 50%; background: #0ea5e9; color: #fff; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .step-item-content { flex: 1; }
+    .step-item-title { font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 2px; }
+    .step-item-desc { font-size: 12px; color: #475569; line-height: 1.5; }
+
+    /* Card list */
+    .card-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .card-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; }
+    .card-chip { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+    .card-chip.blue { background: #dbeafe; color: #1e3a8a; }
+    .card-chip.green { background: #d1fae5; color: #065f46; }
+    .card-chip.amber { background: #fef3c7; color: #92400e; }
+    .card-item-name { font-size: 13px; font-weight: 700; color: #1e293b; }
+    .card-item-desc { font-size: 11px; color: #64748b; margin-top: 1px; }
+    .card-item-bonus { font-size: 13px; font-weight: 800; color: #059669; margin-left: auto; flex-shrink: 0; }
+
+    /* Portal example */
+    .portal-compare { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; margin-bottom: 14px; }
+    .portal-side { border-radius: 12px; padding: 14px; text-align: center; }
+    .portal-side.without { background: #fff1f2; }
+    .portal-side.with { background: #f0fdf4; }
+    .portal-arrow { font-size: 24px; color: #94a3b8; text-align: center; }
+    .portal-pts { font-size: 22px; font-weight: 800; }
+    .portal-side.without .portal-pts { color: #e11d48; }
+    .portal-side.with .portal-pts { color: #059669; }
+    .portal-lbl { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+    /* Checklist */
+    .checklist { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .check-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #f8fafc; border-radius: 10px; cursor: pointer; border: 1.5px solid #e2e8f0; transition: all 0.15s; }
+    .check-item.checked { background: #f0fdf4; border-color: #86efac; }
+    .check-circle { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+    .check-item.checked .check-circle { background: #059669; border-color: #059669; }
+    .check-circle i { font-size: 13px; color: #fff; display: none; }
+    .check-item.checked .check-circle i { display: block; }
+    .check-text { font-size: 13px; color: #374151; }
+    .check-item.checked .check-text { text-decoration: line-through; color: #94a3b8; }
+
+    /* Nav */
+    .nav-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .nav-btn {
+      padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 700;
+      cursor: pointer; border: none; display: flex; align-items: center; gap: 8px;
+      transition: all 0.15s;
+    }
+    .nav-btn.prev { background: #e0f2fe; color: #0369a1; }
+    .nav-btn.prev:hover { background: #bae6fd; }
+    .nav-btn.next { background: #0ea5e9; color: #fff; flex: 1; justify-content: center; }
+    .nav-btn.next:hover { background: #0284c7; }
+    .nav-btn.finish { background: #059669; color: #fff; flex: 1; justify-content: center; }
+    .nav-btn:disabled { opacity: 0.4; cursor: default; }
+
+    /* Divider */
+    .divider { height: 1px; background: #f1f5f9; margin: 14px 0; }
+
+    /* Value comparison */
+    .value-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .value-item { display: flex; align-items: center; gap: 10px; }
+    .value-label { font-size: 12px; color: #475569; width: 130px; flex-shrink: 0; }
+    .value-bar-bg { flex: 1; height: 16px; background: #f1f5f9; border-radius: 20px; overflow: hidden; }
+    .value-bar-fill { height: 100%; border-radius: 20px; }
+    .value-num { font-size: 12px; font-weight: 700; width: 50px; text-align: right; flex-shrink: 0; }
+
+    @media (max-width: 500px) {
+      .card-top { padding: 16px; }
+      .card-body { padding: 14px 16px; }
+      .info-grid { grid-template-columns: 1fr; }
+      .calc-results { grid-template-columns: 1fr 1fr; }
+      .portal-compare { grid-template-columns: 1fr auto 1fr; gap: 6px; }
+      .step-title { font-size: 17px; }
+      .nav-btn { padding: 10px 16px; font-size: 13px; }
+      .step-node { width: 70px; }
+    }
+    @media (max-width: 380px) {
+      .step-node { width: 55px; }
+      .step-label { font-size: 8px; }
+    }
+
+    footer { text-align: center; font-size: 11px; color: #64748b; padding-bottom: 16px; }
+
+    /* Intro screen */
+    .intro-screen { display: none; }
+    .intro-screen.visible { display: block; }
+    .wizard-shell { display: none; }
+    .wizard-shell.visible { display: block; }
+
+    .intro-hero {
+      background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
+      border-radius: 16px; padding: 28px 24px; margin-bottom: 14px; text-align: center;
+    }
+    .intro-hero-icon { font-size: 52px; margin-bottom: 10px; }
+    .intro-hero-title { font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 8px; line-height: 1.2; }
+    .intro-hero-sub { font-size: 14px; color: #bae6fd; line-height: 1.6; }
+
+    .intro-card { background: #fff; border: 1px solid #bae6fd; border-radius: 16px; padding: 20px 24px; margin-bottom: 14px; }
+    .intro-section-title { font-size: 14px; font-weight: 800; color: #0c4a6e; margin-bottom: 12px; }
+
+    .check-yes-no { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .yn-box { border-radius: 12px; padding: 14px; }
+    .yn-box.yes { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .yn-box.no { background: #fff1f2; border: 1px solid #fecdd3; }
+    .yn-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .yn-box.yes .yn-label { color: #059669; }
+    .yn-box.no .yn-label { color: #e11d48; }
+    .yn-item { font-size: 12px; color: #374151; line-height: 1.5; padding: 4px 0; display: flex; gap: 6px; }
+    .yn-item-icon { flex-shrink: 0; }
+
+    .disclaimer-box {
+      background: #fffbeb; border: 2px solid #f59e0b; border-radius: 14px;
+      padding: 16px 18px; margin-bottom: 14px;
+    }
+    .disclaimer-title { font-size: 13px; font-weight: 800; color: #92400e; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .disclaimer-body { font-size: 13px; color: #78350f; line-height: 1.7; }
+    .disclaimer-body strong { color: #92400e; }
+
+    .start-btn {
+      width: 100%; padding: 16px; background: #0ea5e9; color: #fff;
+      border: none; border-radius: 14px; font-size: 16px; font-weight: 800;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: background 0.15s; margin-bottom: 14px;
+    }
+    .start-btn:hover { background: #0284c7; }
+
+    @media (max-width: 500px) {
+      .check-yes-no { grid-template-columns: 1fr; }
+      .intro-hero { padding: 20px 16px; }
+      .intro-card { padding: 16px; }
+    }
+
+    /* Spanish modal */
+    .lang-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+    .lang-modal.open { display: flex; }
+    .lang-modal-box { background: #fff; border-radius: 16px; padding: 28px 24px; max-width: 340px; text-align: center; }
+    .lang-modal-box h3 { font-size: 18px; font-weight: 800; color: #0c4a6e; margin-bottom: 8px; }
+    .lang-modal-box p { font-size: 14px; color: #475569; line-height: 1.6; margin-bottom: 16px; }
+    .lang-modal-close { padding: 10px 24px; background: #0ea5e9; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Brand -->
+  <div class="brand-bar">
+    <div class="brand-icon"><i class="ti ti-plane" aria-hidden="true"></i></div>
+    <div>
+      <div class="brand-title">AviTravelz</div>
+      <div class="brand-sub">Award Travel, Step by Step</div>
+    </div>
+    <div class="lang-toggle">
+      <button class="lang-btn active" data-lang="en" onclick="setLang('en')">English</button>
+      <button class="lang-btn inactive" data-lang="es" onclick="setLang('es')">Español</button>
+    </div>
+  </div>
+
+  <!-- Intro Screen -->
+  <div class="intro-screen" id="intro-screen">
+
+    <div class="intro-hero">
+      <div class="intro-hero-icon">✈️</div>
+      <div class="intro-hero-title">Flying for (almost) free is real. Here's how it works.</div>
+      <div class="intro-hero-sub">Every time you swipe your credit card, you earn points. Most people let those points expire or redeem them for a $10 Amazon coupon. A small group of people uses those same points to fly business class to Europe for $50 in taxes. This guide teaches you how to be in that second group.</div>
+    </div>
+
+    <div class="intro-card">
+      <div class="intro-section-title">The short version</div>
+      <p style="font-size:13px;color:#475569;line-height:1.7;margin-bottom:12px;">
+        Banks partner with airlines and hotels. When you spend on a credit card, you earn the bank's points. You can then move those points to the airline, who gives you miles. You use those miles to book award seats, flights at a fraction of the cash price.
+      </p>
+      <p style="font-size:13px;color:#475569;line-height:1.7;">
+        The key insight: a business class seat to Tokyo that costs <strong style="color:#0c4a6e;">$5,000 in cash</strong> might cost <strong style="color:#059669;">90,000 miles + $80 in taxes</strong>. Those miles came from everyday spending: groceries, gas, dining out. No tricks. No loopholes. Just knowing how the system works.
+      </p>
+    </div>
+
+    <div class="intro-card">
+      <div class="intro-section-title">Is this for you?</div>
+      <div class="check-yes-no">
+        <div class="yn-box yes">
+          <div class="yn-label">✅ This works if you...</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Pay your credit card in full every month</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Already spend on groceries, dining, gas, and subscriptions</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Have good enough credit to qualify for premium cards</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Are willing to spend 30 minutes learning the system</div>
+        </div>
+        <div class="yn-box no">
+          <div class="yn-label">🚫 This does NOT work if you...</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Carry a balance or pay interest on your cards</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Spend more than you normally would just to earn points</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Miss or make late payments regularly</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Are already struggling with credit card debt</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="disclaimer-box">
+      <div class="disclaimer-title"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Read this before you open any new card</div>
+      <div class="disclaimer-body">
+        <strong>Credit card interest kills every point you earn.</strong> If you carry a balance and pay 20–30% interest, no amount of free travel makes up for that. This system only works if you treat your credit card like a debit card. Spend what you have, pay it off in full when the statement closes, every single month. <strong>One month of interest charges on a $5,000 balance will cost you more than the flight you were trying to earn.</strong> If that's not you right now, bookmark this guide and come back when it is. No judgment. Just math..
+      </div>
+    </div>
+
+    <button class="start-btn" onclick="startGuide()">
+      <i class="ti ti-rocket" aria-hidden="true"></i> I'm ready. Show me how it works.
+    </button>
+
+  </div>
+
+  <!-- Wizard Shell -->
+  <div class="wizard-shell" id="wizard-shell">
+
+    <!-- Progress -->
+    <div class="progress-bar">
+      <div class="progress-track" id="progress-track"></div>
+      <div class="progress-pct" id="progress-pct"></div>
+    </div>
+
+    <!-- Main content -->
+    <div class="main-card" id="main-card"></div>
+
+    <!-- Navigation -->
+    <div class="nav-row">
+      <button class="nav-btn prev" id="btn-prev" onclick="goStep(currentStep - 1)">
+        <i class="ti ti-arrow-left" aria-hidden="true"></i> Back
+      </button>
+      <button class="nav-btn next" id="btn-next" onclick="goStep(currentStep + 1)">
+        Next <i class="ti ti-arrow-right" aria-hidden="true"></i>
+      </button>
+    </div>
+
+  </div>
+
+  <footer>AviTravelz · This guide is for educational purposes. Always verify current offers before applying for cards.</footer>
+</div>
+
+</div>
+
+<script>
+// ─── LANGUAGE
+let currentLang = 'en';
+
+// ─── INTRO CONTENT ─────────────────────────────────────────────────────────
+function renderIntro() {
+  document.getElementById('intro-screen').innerHTML = INTRO[currentLang]();
+}
+
+const INTRO = {
+  en: () => `
+    <div class="intro-hero">
+      <div class="intro-hero-icon">✈️</div>
+      <div class="intro-hero-title">Flying for (almost) free is real. Here's how it works.</div>
+      <div class="intro-hero-sub">Every time you swipe your credit card, you earn points. Most people let those points expire or redeem them for a $10 Amazon coupon. A small group uses those same points to fly business class to Europe for $50 in taxes. This guide teaches you how to be in that second group.</div>
+    </div>
+    <div class="intro-card">
+      <div class="intro-section-title">The short version</div>
+      <p style="font-size:13px;color:#475569;line-height:1.7;margin-bottom:12px;">Banks partner with airlines and hotels. When you spend on a credit card, you earn the bank's points. You can then move those points to the airline, who gives you miles. You use those miles to book award seats, flights at a fraction of the cash price.</p>
+      <p style="font-size:13px;color:#475569;line-height:1.7;">The key insight: a business class seat to Tokyo that costs <strong style="color:#0c4a6e;">$5,000 in cash</strong> might cost <strong style="color:#059669;">90,000 miles + $80 in taxes</strong>. Those miles came from everyday spending: groceries, gas, dining out. No tricks. No loopholes. Just knowing how the system works.</p>
+    </div>
+    <div class="intro-card">
+      <div class="intro-section-title">Is this for you?</div>
+      <div class="check-yes-no">
+        <div class="yn-box yes">
+          <div class="yn-label">✅ This works if you...</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Pay your credit card in full every month</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Already spend on groceries, dining, gas, and subscriptions</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Have good enough credit to qualify for premium cards</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Are willing to spend 30 minutes learning the system</div>
+        </div>
+        <div class="yn-box no">
+          <div class="yn-label">🚫 This does NOT work if you...</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Carry a balance or pay interest on your cards</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Spend more than you normally would just to earn points</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Miss or make late payments regularly</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Are already struggling with credit card debt</div>
+        </div>
+      </div>
+    </div>
+    <div class="disclaimer-box">
+      <div class="disclaimer-title"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Read this before you open any new card</div>
+      <div class="disclaimer-body"><strong>Credit card interest kills every point you earn.</strong> If you carry a balance and pay 20 to 30% interest, no amount of free travel makes up for that. This system only works if you treat your credit card like a debit card. Spend what you have, pay it off in full when the statement closes, every single month. <strong>One month of interest charges on a $5,000 balance will cost you more than the flight you were trying to earn.</strong> If that's not you right now, bookmark this guide and come back when it is. No judgment. Just math.</div>
+    </div>
+    <button class="start-btn" onclick="startGuide()"><i class="ti ti-rocket" aria-hidden="true"></i> I'm ready. Show me how it works.</button>
+  `,
+  es: () => `
+    <div class="intro-hero">
+      <div class="intro-hero-icon">✈️</div>
+      <div class="intro-hero-title">Volar (casi) gratis es posible. Así funciona.</div>
+      <div class="intro-hero-sub">Cada vez que usas tu tarjeta de crédito, ganas puntos. La mayoría los deja expirar o los canjea por un cupón de $10. Un grupo pequeño usa esos mismos puntos para volar en clase ejecutiva a Europa pagando solo $50 en impuestos. Esta guía te muestra cómo estar en ese grupo.</div>
+    </div>
+    <div class="intro-card">
+      <div class="intro-section-title">La versión corta</div>
+      <p style="font-size:13px;color:#475569;line-height:1.7;margin-bottom:12px;">Los bancos tienen acuerdos con aerolíneas y hoteles. Cuando gastas con tu tarjeta, ganas puntos del banco. Luego puedes transferir esos puntos a la aerolínea, que te da millas. Usas esas millas para reservar vuelos a una fracción del precio en efectivo.</p>
+      <p style="font-size:13px;color:#475569;line-height:1.7;">La clave: un asiento de clase ejecutiva a Tokio que cuesta <strong style="color:#0c4a6e;">$5,000 en efectivo</strong> puede costarte solo <strong style="color:#059669;">90,000 millas y $80 en impuestos</strong>. Esas millas vienen de gastos diarios: supermercado, gasolina, restaurantes. Sin trucos. Solo saber cómo funciona el sistema.</p>
+    </div>
+    <div class="intro-card">
+      <div class="intro-section-title">¿Es esto para ti?</div>
+      <div class="check-yes-no">
+        <div class="yn-box yes">
+          <div class="yn-label">✅ Esto funciona si...</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Pagas tu tarjeta en su totalidad cada mes</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Ya gastas en supermercado, restaurantes, gasolina y suscripciones</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Tienes buen historial crediticio para calificar para tarjetas premium</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Estás dispuesto a dedicar 30 minutos a aprender el sistema</div>
+        </div>
+        <div class="yn-box no">
+          <div class="yn-label">🚫 Esto NO funciona si...</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Llevas un saldo o pagas intereses en tus tarjetas</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Gastas más de lo normal solo para ganar puntos</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Haces pagos tardíos con frecuencia</div>
+          <div class="yn-item"><span class="yn-item-icon">•</span>Ya tienes problemas con deudas de tarjetas de crédito</div>
+        </div>
+      </div>
+    </div>
+    <div class="disclaimer-box">
+      <div class="disclaimer-title"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Lee esto antes de abrir cualquier tarjeta nueva</div>
+      <div class="disclaimer-body"><strong>Los intereses de la tarjeta destruyen todos los puntos que ganas.</strong> Si llevas un saldo y pagas 20 a 30% de interés, ningún viaje gratis lo compensa. Este sistema solo funciona si tratas tu tarjeta como una tarjeta de débito. Gasta lo que tienes, paga el saldo completo cuando llegue el estado de cuenta, todos los meses. <strong>Un mes de intereses sobre un saldo de $5,000 te va a costar más que el vuelo que intentabas ganar.</strong> Si esa es tu situación ahora, guarda esta guía y vuelve cuando estés listo. Sin juicios. Solo matemática.</div>
+    </div>
+    <button class="start-btn" onclick="startGuide()"><i class="ti ti-rocket" aria-hidden="true"></i> Estoy listo. Muéstrame cómo funciona.</button>
+  `
+};
+
+// ─── STEP DEFINITIONS ──────────────────────────────────────────────────────
+
+const STEPS = [
+  {
+    icon: 'ti-credit-card',
+    num: '01',
+    title: 'Get the Right Credit Card',
+    subtitle: 'This is where your free travel begins.',
+    content: () => `
+      <div class="big-idea">
+        The fastest way to earn a lot of points quickly is a sign-up bonus, a big gift of points just for opening a new card and spending a set amount in the first few months.
+      </div>
+
+      <div class="example-box">
+        <div class="example-label">Real Example</div>
+        <div class="example-text">
+          Chase Sapphire Preferred: Spend <strong>$4,000 in the first 3 months</strong> → earn <strong>60,000 bonus points</strong>.<br>
+          That's worth <strong>$750–$900 in travel</strong> . Before you earn a single point from spending.
+        </div>
+      </div>
+
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">Top starter cards to know about</p>
+      <div class="card-list">
+        <div class="card-item">
+          <div>
+            <div class="card-item-name">Chase Sapphire Preferred</div>
+            <div class="card-item-desc">$95/yr · Best for beginners · transfers to 14+ airlines &amp; hotels</div>
+          </div>
+          <div class="card-item-bonus">60k pts</div>
+        </div>
+        <div class="card-item">
+          <div>
+            <div class="card-item-name">Chase Sapphire Reserve</div>
+            <div class="card-item-desc">$795/yr · $300 travel credit offsets fee · lounge access</div>
+          </div>
+          <div class="card-item-bonus">60k pts</div>
+        </div>
+        <div class="card-item">
+          <div>
+            <div class="card-item-name">Amex Gold Card</div>
+            <div class="card-item-desc">$325/yr · 4x on dining &amp; groceries · transfers to Delta + more</div>
+          </div>
+          <div class="card-item-bonus">60k pts</div>
+        </div>
+        <div class="card-item">
+          <div>
+            <div class="card-item-name">Capital One Venture X</div>
+            <div class="card-item-desc">$395/yr · Simple flat-rate earning · lounge access · 12+ transfer partners</div>
+          </div>
+          <div class="card-item-bonus">75k pts</div>
+        </div>
+        <div class="card-item">
+          <div>
+            <div class="card-item-name">Bilt Mastercard</div>
+            <div class="card-item-desc">$0/yr · Bilt 2.0, earns on rent AND mortgage payments · transfers to 14+ partners</div>
+          </div>
+          <div class="card-item-bonus">No bonus</div>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <i class="ti ti-bulb" aria-hidden="true"></i>
+        <div class="tip-text"><strong>You don't need 10 cards.</strong> Start with ONE good card. Learn how the points work. Then expand later once you're comfortable with the system.</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:6px;">Share your referral link and earn points for it</p>
+      <p style="font-size:12px;color:#475569;margin-bottom:10px;line-height:1.6;">Once you have a card, the bank gives you a personal referral link. When a friend or family member applies through your link and gets approved, you both win. You earn bonus points just for sharing. Chase, Amex, Capital One, and Bilt all have referral programs. Some cards pay out 10,000 to 30,000 bonus points per approved referral. If you are already talking award travel with people, always send your link.</p>
+
+      <div class="example-box">
+        <div class="example-label">Easy points you are probably leaving behind</div>
+        <div class="example-text">
+          Refer 3 friends to your Chase Sapphire Preferred and all three get approved. That is up to <strong>45,000 bonus points</strong> added to your account. You didn't spend a dollar to earn them.
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:6px;">Own a business? You should have a business card too</p>
+      <p style="font-size:12px;color:#475569;margin-bottom:10px;line-height:1.6;">Business credit cards earn points on business expenses like software, advertising, shipping, office supplies, and meals with clients. That spending is happening anyway. If it's going on a card that earns cash back or nothing useful, you are missing out. Business cards also come with their own sign-up bonuses, separate from your personal cards, so you can stack both.</p>
+
+      <div class="cat-list" style="margin-bottom:14px;">
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+          <div style="display:flex;align-items:center;gap:10px;width:100%;">
+            <div class="cat-icon">💼</div>
+            <div class="cat-name" style="font-weight:800;">Amex Business Gold</div>
+            <div class="cat-mult" style="color:#059669;">4x on top 2 categories</div>
+          </div>
+          <div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Earns 4x on your two highest spend categories each month automatically. Great for businesses with variable spending across advertising, dining, gas, and shipping.</div>
+        </div>
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+          <div style="display:flex;align-items:center;gap:10px;width:100%;">
+            <div class="cat-icon">💼</div>
+            <div class="cat-name" style="font-weight:800;">Ink Business Preferred (Chase)</div>
+            <div class="cat-mult" style="color:#0ea5e9;">3x on travel + ads</div>
+          </div>
+          <div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">3x on travel, shipping, advertising, and internet. Points go into Chase Ultimate Rewards, same pool as your personal Sapphire card. $95 annual fee.</div>
+        </div>
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+          <div style="display:flex;align-items:center;gap:10px;width:100%;">
+            <div class="cat-icon">💼</div>
+            <div class="cat-name" style="font-weight:800;">Capital One Spark Miles</div>
+            <div class="cat-mult" style="color:#d97706;">2x on everything</div>
+          </div>
+          <div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Simple flat 2x on all purchases. Same transfer partners as the Venture X. Good if your business spending doesn't fit neatly into bonus categories.</div>
+        </div>
+      </div>
+
+      <div class="warn-box">
+        <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+        <div class="warn-text"><strong>If you like to travel, do not use a card that earns cash back.</strong> Cards like the Citi Double Cash or Discover Cashback earn money back but cannot transfer to airlines or hotels. You are essentially trading a free flight for a small statement credit. Get a card that earns transferable points if travel is the goal.</div>
+      </div>
+    `
+  },
+
+  {
+    icon: 'ti-trending-up',
+    num: '02',
+    title: 'Earn Points Every Day',
+    subtitle: 'Your everyday spending is leaving free flights on the table.',
+    content: () => `
+      <div class="big-idea">
+        Every dollar you spend on your credit card earns points. But some categories earn much more. This is called a multiplier. The higher the number, the more points you earn per dollar.
+      </div>
+
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">Common earning rates</p>
+      <div class="cat-list">
+        <div class="cat-row">
+          <div class="cat-icon">🍽️</div>
+          <div class="cat-name">Dining out</div>
+          <div class="cat-mult">3–5x</div>
+          <div class="cat-pts">$100 → 300–500 pts</div>
+        </div>
+        <div class="cat-row">
+          <div class="cat-icon">✈️</div>
+          <div class="cat-name">Flights &amp; hotels</div>
+          <div class="cat-mult">3–5x</div>
+          <div class="cat-pts">$100 → 300–500 pts</div>
+        </div>
+        <div class="cat-row">
+          <div class="cat-icon">🛒</div>
+          <div class="cat-name">Groceries</div>
+          <div class="cat-mult">2–6x</div>
+          <div class="cat-pts">$100 → 200–600 pts</div>
+        </div>
+        <div class="cat-row">
+          <div class="cat-icon">⛽</div>
+          <div class="cat-name">Gas stations</div>
+          <div class="cat-mult">2–3x</div>
+          <div class="cat-pts">$100 → 200–300 pts</div>
+        </div>
+        <div class="cat-row" style="opacity:0.6;">
+          <div class="cat-icon">🛍️</div>
+          <div class="cat-name">Everything else</div>
+          <div class="cat-mult">1x</div>
+          <div class="cat-pts">$100 → 100 pts</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:6px;">Shopping portals, free bonus points on every online purchase</p>
+      <p style="font-size:12px;color:#475569;margin-bottom:12px;line-height:1.5;">Before you shop anywhere online, click through a shopping portal first. The store pays the portal a commission, and the portal gives part of that to you as points or cash back. You pay the exact same price. It's free money that most people leave on the table.</p>
+
+      <div class="portal-compare" style="margin-bottom:14px;">
+        <div class="portal-side without">
+          <div class="portal-lbl">Buy normally</div>
+          <div class="portal-pts">300 pts</div>
+          <div class="portal-lbl">$100 at Nike · 3x card</div>
+        </div>
+        <div class="portal-arrow">→</div>
+        <div class="portal-side with">
+          <div class="portal-lbl">Click portal first</div>
+          <div class="portal-pts">800 pts</div>
+          <div class="portal-lbl">3x card + 5x portal</div>
+        </div>
+      </div>
+
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">Portals worth knowing</p>
+      <div class="cat-list">
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+          <div style="display:flex;align-items:center;gap:10px;width:100%;">
+            <div class="cat-icon">🛍️</div>
+            <div class="cat-name" style="font-weight:800;">Rakuten</div>
+            <div class="cat-mult" style="color:#059669;">Top Pick</div>
+          </div>
+          <div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Works with 3,500+ stores. If you have an Amex card, you can set Rakuten to pay you in Amex Membership Rewards points instead of cash back. One extra click before every online purchase. Download the browser extension so you never forget.</div>
+        </div>
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+          <div style="display:flex;align-items:center;gap:10px;width:100%;">
+            <div class="cat-icon">🔍</div>
+            <div class="cat-name" style="font-weight:800;">RoveMiles</div>
+            <div class="cat-mult" style="color:#0ea5e9;">Miles Focused</div>
+          </div>
+          <div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Specifically built for earning airline miles. Searches across multiple portals and shows you which one gives the most miles per dollar at any given store. Great when you're trying to top off a specific airline account.</div>
+        </div>
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+          <div style="display:flex;align-items:center;gap:10px;width:100%;">
+            <div class="cat-icon">💰</div>
+            <div class="cat-name" style="font-weight:800;">CashMonitor</div>
+            <div class="cat-mult" style="color:#d97706;">Compares All</div>
+          </div>
+          <div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Compares rates across all major cash-back portals (Rakuten, BeFrugal, TopCashback, etc.) side by side so you always get the highest rate. Takes 30 seconds to check before you buy something expensive.</div>
+        </div>
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+          <div style="display:flex;align-items:center;gap:10px;width:100%;">
+            <div class="cat-icon">🏦</div>
+            <div class="cat-name" style="font-weight:800;">Bank Portals</div>
+            <div class="cat-mult" style="color:#7c3aed;">Stackable</div>
+          </div>
+          <div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Chase, Amex, Citi, and Capital One all have their own shopping portals inside your account. The best move: stack a bank portal WITH Rakuten on the same purchase when possible for double portal bonuses.</div>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <i class="ti ti-bulb" aria-hidden="true"></i>
+        <div class="tip-text"><strong>Install the Rakuten browser extension today.</strong> It pops up automatically whenever you're on a site that qualifies. You don't have to think about it. It just reminds you to click. Free to use, takes 2 minutes to set up.</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:6px;">You may already have miles sitting there unclaimed</p>
+      <p style="font-size:12px;color:#475569;margin-bottom:10px;line-height:1.6;">A lot of people have flown before, paid cash, and never signed up for the airline's loyalty program. Those flights earned zero miles. None. The airline kept them. This happens constantly and it adds up to thousands of miles just left behind.</p>
+
+      <div class="warn-box" style="margin-bottom:10px;">
+        <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+        <div class="warn-text"><strong>Every time you fly without a loyalty account number on your ticket, you lose those miles forever.</strong> Airlines will not credit them retroactively past 6 to 12 months in most cases, and even then you need your boarding pass or receipt.</div>
+      </div>
+
+      <div class="example-box">
+        <div class="example-label">Real scenario</div>
+        <div class="example-text">
+          You flew round trip from LA to New York 4 times this year on Delta. No SkyMiles account. That's roughly <strong>18,000 miles gone</strong>. At 2 cents per mile in value, you left about <strong>$360 in free travel on the table.</strong> Just by not signing up for a free account.
+        </div>
+      </div>
+
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">Fix this right now, takes 5 minutes</p>
+      <div class="steps-list" style="margin-bottom:14px;">
+        <div class="step-item">
+          <div class="step-item-num">1</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Sign up for every airline you fly regularly</div>
+            <div class="step-item-desc">Delta SkyMiles, United MileagePlus, American AAdvantage, Southwest Rapid Rewards. All free. Go to each airline's website and create an account.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-item-num">2</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Add your frequent flyer number to every booking</div>
+            <div class="step-item-desc">When booking a flight, there is a field for your loyalty number. Put it in. If you forgot, call the airline or log into your account after the flight and request a mileage credit.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-item-num">3</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Check if past flights can still be credited</div>
+            <div class="step-item-desc">Log into your new account and look for "Request missing miles" or "Retro credit." You will need your boarding pass or confirmation number. Most airlines allow this up to 6 to 12 months back.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <i class="ti ti-bulb" aria-hidden="true"></i>
+        <div class="tip-text"><strong>Same goes for hotels.</strong> Stayed at a Hyatt, Marriott, or Hilton without a loyalty number? Same problem. Sign up for those programs too. Hotel points can pay for free nights just as easily as airline miles pay for free flights.</div>
+      </div>
+    `
+  },
+
+  {
+    icon: 'ti-coins',
+    num: '03',
+    title: 'Know What Your Points Are Worth',
+    subtitle: 'Not all ways to use points are equal. This is the most important lesson.',
+    content: () => `
+      <div class="big-idea">
+        Points are like a currency. You can spend them for a little, or spend them smartly and get a LOT more value. The key is transferring them to airlines instead of cashing them out.
+      </div>
+
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:10px;">The same 60,000 points. Three very different outcomes.</p>
+      <div class="value-row">
+        <div class="value-item">
+          <div class="value-label" style="color:#e11d48;">Cash back</div>
+          <div class="value-bar-bg"><div class="value-bar-fill" style="width:20%;background:#fda4af;"></div></div>
+          <div class="value-num" style="color:#e11d48;">$600</div>
+        </div>
+        <div class="value-item">
+          <div class="value-label" style="color:#d97706;">Pay for flights</div>
+          <div class="value-bar-bg"><div class="value-bar-fill" style="width:40%;background:#fcd34d;"></div></div>
+          <div class="value-num" style="color:#d97706;">$750–$900</div>
+        </div>
+        <div class="value-item">
+          <div class="value-label" style="color:#059669;">Transfer to airlines</div>
+          <div class="value-bar-bg"><div class="value-bar-fill" style="width:85%;background:#6ee7b7;"></div></div>
+          <div class="value-num" style="color:#059669;">$900–$1,800+</div>
+        </div>
+        <div class="value-item">
+          <div class="value-label" style="color:#0ea5e9;">Premium cabin</div>
+          <div class="value-bar-bg"><div class="value-bar-fill" style="width:100%;background:#7dd3fc;"></div></div>
+          <div class="value-num" style="color:#0ea5e9;">$2,000+</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="calc-box">
+        <div class="calc-title">Calculate your points value</div>
+        <div class="calc-input-row">
+          <label>I have</label>
+          <input type="number" id="pts-input" value="75000" inputmode="numeric" oninput="calcPtsValue()">
+          <label>points</label>
+        </div>
+        <div class="calc-results">
+          <div class="calc-result bad">
+            <div class="calc-result-val" id="val-cash">$750</div>
+            <div class="calc-result-lbl">Cash back (1¢)</div>
+          </div>
+          <div class="calc-result ok">
+            <div class="calc-result-val" id="val-book">$937</div>
+            <div class="calc-result-lbl">Book direct (1.25¢)</div>
+          </div>
+          <div class="calc-result great">
+            <div class="calc-result-val" id="val-transfer">$1,500+</div>
+            <div class="calc-result-lbl">Transfer to airline (2¢+)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="example-box">
+        <div class="example-label">Think of it this way</div>
+        <div class="example-text">
+          Your bank points are like a gift card. You can use them at your bank's own store. That's fine.. Or you can convert them into airline miles. That's where the magic happens. A business class seat to Europe that costs <strong>$4,000 in cash</strong> might only cost you <strong>60,000 points + $50 in taxes</strong>. That's over 6¢ per point in value.
+        </div>
+      </div>
+
+      <div class="warn-box">
+        <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+        <div class="warn-text"><strong>Don't cash out your points for gift cards.</strong> Gift cards give you 1¢ per point, the worst possible value. Transfer to airlines instead and get 2–6x more value.</div>
+      </div>
+    `
+  },
+
+  {
+    icon: 'ti-map',
+    num: '04',
+    title: 'Plan Your Trip',
+    subtitle: 'Pick a destination and build your points strategy around it.',
+    content: () => `
+      <div class="big-idea">
+        Before you transfer a single point, you need a plan. Figure out where you're going, which airline flies there, and whether your bank can get you there.
+      </div>
+
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">Follow this path every time</p>
+      <div class="steps-list">
+        <div class="step-item">
+          <div class="step-item-num">1</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Pick your destination</div>
+            <div class="step-item-desc">Where do you want to go? Think big. Award travel makes business class to Europe or Japan actually reachable.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-item-num">2</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Look up the cash price</div>
+            <div class="step-item-desc">Go to Google Flights and find what the flight costs in cash. This is your benchmark. You'll use it to see how good your points deal is.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-item-num">3</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Find which airline flies there</div>
+            <div class="step-item-desc">United, Delta, American, British Airways? You don't have to fly the airline whose miles you use. You can book one airline and fly another in the same alliance.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-item-num">4</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Check if your bank transfers there</div>
+            <div class="step-item-desc">Does Chase, Amex, Citi, or Capital One transfer to that airline? Use the AviTravelz Partner Explorer to see all options.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-item-num">5</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Look for a transfer bonus</div>
+            <div class="step-item-desc">Banks sometimes offer 25–40% extra miles when you transfer. A 30% bonus on 50,000 points = 15,000 free miles. Worth checking before you transfer.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="example-box">
+        <div class="example-label">Worked Example: London in Business Class</div>
+        <div class="example-text">
+          Cash price: <strong>$3,800 round-trip</strong><br>
+          Airline: British Airways flies nonstop from NYC<br>
+          Your bank: Chase transfers to British Avios at 1:1<br>
+          Award cost: <strong>50,000 Avios + $50 in taxes</strong><br>
+          Your value: 3,800 ÷ 50,000 = <strong>7.5 cents per point</strong>. Incredible deal.
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <i class="ti ti-bulb" aria-hidden="true"></i>
+        <div class="tip-text"><strong>Flexibility is your superpower.</strong> If you can fly Tuesday instead of Friday, or leave in March instead of June, your points go much further. Peak dates cost 2–3x more points.</div>
+      </div>
+    `
+  },
+
+  {
+    icon: 'ti-search',
+    num: '05',
+    title: 'Find Your Award Seat',
+    subtitle: 'Always find the seat first. Never transfer points before you do.',
+    content: () => `
+      <div class="warn-box">
+        <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+        <div class="warn-text"><strong>Golden rule: Never transfer points until you can see the award seat is available.</strong> Point transfers are one-way. Once they leave your bank account, you cannot get them back.</div>
+      </div>
+
+      <div class="big-idea">
+        An award seat is a flight that the airline has made available for booking with miles instead of cash. Not every seat on every flight is available as an award. You have to search for one that is.
+      </div>
+
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">How to search for award space</p>
+      <div class="steps-list">
+        <div class="step-item">
+          <div class="step-item-num">1</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Go to the airline's website</div>
+            <div class="step-item-desc">Look for a "Book with miles," "Award travel," or "Use miles" option on the flight search page.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-item-num">2</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Search your exact dates (and flexible dates too)</div>
+            <div class="step-item-desc">If your exact date has no availability, try the days before and after. Most airline calendars let you view the whole month at once.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-item-num">3</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Look for "Saver" awards</div>
+            <div class="step-item-desc">Airlines offer two award levels: Saver (cheap, limited seats) and Standard/Anytime (more expensive). Always aim for Saver first.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-item-num">4</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Check the taxes and fees</div>
+            <div class="step-item-desc">Some airlines charge low fees ($25–$75). Others charge brutal fees ($500+). British Airways and Lufthansa are known for high fees. Virgin Atlantic and United are much cheaper. Factor this into your decision.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-item-num">5</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Try partner airlines</div>
+            <div class="step-item-desc">You can book American Airlines flights using British Airways Avios, or Delta using Virgin Atlantic miles. Partner searches sometimes show more availability at better prices.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <i class="ti ti-bulb" aria-hidden="true"></i>
+        <div class="tip-text"><strong>Best days to search:</strong> Award seats tend to open up 330 days before the flight (the day booking opens) and again close to the departure date when airlines release unsold seats. Mid-week flights (Tuesday, Wednesday) have the most availability.</div>
+      </div>
+
+      <div class="example-box">
+        <div class="example-label">Smart move: book one, fly another</div>
+        <div class="example-text">
+          Instead of booking Delta directly (expensive), search Virgin Atlantic Flying Club for Delta flights. Same seat. Same plane. Often <strong>50,000 Virgin miles instead of 300,000+ Delta SkyMiles</strong>. That's the partner airline move in action.
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:6px;">Award search tools that do the hard work for you</p>
+      <p style="font-size:12px;color:#475569;margin-bottom:10px;line-height:1.6;">Searching one airline at a time is slow. These sites search award availability across multiple airlines at once, so you can find open seats fast without logging into each airline separately.</p>
+
+      <div class="cat-list" style="margin-bottom:14px;">
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+          <div style="display:flex;align-items:center;gap:10px;width:100%;">
+            <div class="cat-icon">🪑</div>
+            <div class="cat-name" style="font-weight:800;">seats.aero</div>
+            <div class="cat-mult" style="color:#059669;">Fan Favorite</div>
+          </div>
+          <div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Searches award availability across dozens of programs at once. You type in your route and it shows you which airlines have open seats and which loyalty programs you can book them through. Huge time saver.</div>
+        </div>
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+          <div style="display:flex;align-items:center;gap:10px;width:100%;">
+            <div class="cat-icon">📍</div>
+            <div class="cat-name" style="font-weight:800;">point.me</div>
+            <div class="cat-mult" style="color:#0ea5e9;">Amex + Bilt Partner</div>
+          </div>
+          <div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Shows you the best ways to use your points based on what you actually have. Amex Membership Rewards and Bilt both officially partner with point.me, so if you have either card you get access to enhanced search features built right into the tool.</div>
+        </div>
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+          <div style="display:flex;align-items:center;gap:10px;width:100%;">
+            <div class="cat-icon">🗺️</div>
+            <div class="cat-name" style="font-weight:800;">roame.travel</div>
+            <div class="cat-mult" style="color:#d97706;">Flexible Dates</div>
+          </div>
+          <div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Great if your dates are flexible. You pick a home airport and a region, and it shows you every award flight available across a date range so you can spot the best deals. Good for the "where can I go with my points?" question.</div>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <i class="ti ti-bulb" aria-hidden="true"></i>
+        <div class="tip-text"><strong>Use these tools to confirm a seat exists BEFORE transferring anything.</strong> Find the flight on seats.aero or point.me, verify it is bookable, then go transfer your points and complete the reservation. Never the other way around.</div>
+      </div>
+    `
+  },
+
+  {
+    icon: 'ti-transfer',
+    num: '06',
+    title: 'Transfer Points & Book',
+    subtitle: "You found the seat. Now it's time to move your points and lock it in.",
+    content: () => `
+      <div class="big-idea">
+        You've done the hard work. The seat is available. Now you transfer your bank points to the airline, then use those miles to complete the booking.
+      </div>
+
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">How to transfer points</p>
+      <div class="steps-list">
+        <div class="step-item">
+          <div class="step-item-num">1</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Log into your bank app or website</div>
+            <div class="step-item-desc">Chase, Amex, Citi, and Capital One all have a transfer section in the rewards or travel section.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-item-num">2</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Find "Transfer Points" or "Travel Partners"</div>
+            <div class="step-item-desc">Select the airline you identified in Step 5.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-item-num">3</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Enter your loyalty account number</div>
+            <div class="step-item-desc">You'll need a frequent flyer account with the airline. If you don't have one, sign up for free on the airline's website. Takes 2 minutes.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-item-num">4</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Transfer only what you need</div>
+            <div class="step-item-desc">Transfer the exact number of miles the award costs. You don't need to transfer everything.</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-item-num">5</div>
+          <div class="step-item-content">
+            <div class="step-item-title">Wait for the miles to land (usually instant)</div>
+            <div class="step-item-desc">Most transfers are instant or within a few minutes. Some take 24–72 hours. Once they appear in your airline account, go book immediately.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">Booking checklist, tap each when done</p>
+      <div class="checklist" id="checklist">
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-circle"><i class="ti ti-check" aria-hidden="true"></i></div>
+          <div class="check-text">Confirmed the award seat is available before transferring</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-circle"><i class="ti ti-check" aria-hidden="true"></i></div>
+          <div class="check-text">Transferred the correct number of miles to the right airline</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-circle"><i class="ti ti-check" aria-hidden="true"></i></div>
+          <div class="check-text">Miles appeared in my airline loyalty account</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-circle"><i class="ti ti-check" aria-hidden="true"></i></div>
+          <div class="check-text">Went back to the airline website and found the same seat</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-circle"><i class="ti ti-check" aria-hidden="true"></i></div>
+          <div class="check-text">Completed the booking and paid taxes/fees</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-circle"><i class="ti ti-check" aria-hidden="true"></i></div>
+          <div class="check-text">Took a screenshot of the confirmation and saved it</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-circle"><i class="ti ti-check" aria-hidden="true"></i></div>
+          <div class="check-text">Checked in 24 hours before the flight</div>
+        </div>
+      </div>
+
+      <div class="warn-box">
+        <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+        <div class="warn-text"><strong>Transfers are one-way and permanent.</strong> Once you send points to an airline, they cannot come back. Always confirm the seat is available FIRST. This is the number one mistake new travelers make.</div>
+      </div>
+    `
+  },
+
+  {
+    icon: 'ti-star',
+    num: '07',
+    title: "You're Ready. Now Go Fly.",
+    subtitle: 'You now know more than most people ever learn about award travel.',
+    content: () => `
+      <div class="big-idea">
+        Award travel isn't magic. It's a system. Once you understand the system, flights that cost other people $4,000 will cost you $50 in fees and a stack of points you earned just by living your normal life.
+      </div>
+
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">Quick recap, the 6-step system</p>
+      <div class="info-grid">
+        <div class="info-box teal">
+          <div class="info-box-icon">💳</div>
+          <div class="info-box-title">Step 1</div>
+          <div class="info-box-text">Get a card with a big sign-up bonus</div>
+        </div>
+        <div class="info-box green">
+          <div class="info-box-icon">📈</div>
+          <div class="info-box-title">Step 2</div>
+          <div class="info-box-text">Earn every day, spend categories + shopping portals</div>
+        </div>
+        <div class="info-box amber">
+          <div class="info-box-icon">💰</div>
+          <div class="info-box-title">Step 3</div>
+          <div class="info-box-text">Know your points' value. Transfer beats cash back</div>
+        </div>
+        <div class="info-box purple">
+          <div class="info-box-icon">🗺️</div>
+          <div class="info-box-title">Step 4</div>
+          <div class="info-box-text">Plan your trip and match bank to airline</div>
+        </div>
+        <div class="info-box teal">
+          <div class="info-box-icon">🔍</div>
+          <div class="info-box-title">Step 5</div>
+          <div class="info-box-text">Find the award seat BEFORE transferring anything</div>
+        </div>
+        <div class="info-box green">
+          <div class="info-box-icon">✈️</div>
+          <div class="info-box-title">Step 6</div>
+          <div class="info-box-text">Transfer and book. Screenshot your confirmation</div>
+        </div>
+      </div>
+
+      <div class="example-box">
+        <div class="example-label">What's possible with 100,000 points</div>
+        <div class="example-text">
+          Business class to Europe → <strong>60,000–80,000 points + ~$50</strong> (vs $3,500 cash)<br>
+          Business class to Japan → <strong>90,000 points + ~$80</strong> (vs $5,000 cash)<br>
+          Round trip domestic first class → <strong>25,000–35,000 points</strong> (vs $600 cash)<br>
+          5-night stay at a Park Hyatt → <strong>25,000–40,000 Hyatt points</strong> (vs $1,500 cash)
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <i class="ti ti-bulb" aria-hidden="true"></i>
+        <div class="tip-text"><strong>Use the AviTravelz tools:</strong> The <strong>Partner Explorer</strong> shows which banks connect to which airlines and alliances. The <strong>Transfer Calculator</strong> tells you if a redemption is worth it. The <strong>Seat Explorer</strong> shows what you're actually getting before you book. You've got everything you need.</div>
+      </div>
+
+      <div class="tip-box" style="background:#eff6ff;border-color:#bfdbfe;">
+        <i class="ti ti-heart" aria-hidden="true" style="color:#2563eb;"></i>
+        <div class="tip-text" style="color:#1e3a8a;"><strong>Share this guide.</strong> Award travel is a skill most people never learn, but once you do it changes how you see travel forever. Share AviTravelz with anyone who wants to travel more for less.</div>
+      </div>
+    `
+  }
+];
+
+
+// ─── STEP DEFINITIONS (Spanish) ────────────────────────────────────────────
+const STEPS_ES = [
+  {
+    icon: 'ti-credit-card', num: '01',
+    title: 'Consigue la Tarjeta Correcta',
+    subtitle: 'Aquí es donde comienza tu viaje gratis.',
+    content: () => `
+      <div class="big-idea">La forma más rápida de ganar muchos puntos es el bono de bienvenida. Es un regalo de puntos solo por abrir una tarjeta nueva y gastar cierta cantidad en los primeros meses.</div>
+      <div class="example-box"><div class="example-label">Ejemplo real</div><div class="example-text">Chase Sapphire Preferred: Gasta <strong>$4,000 en los primeros 3 meses</strong> y gana <strong>60,000 puntos de bono</strong>.<br>Vale entre <strong>$750 y $900 en viajes</strong>. Antes de ganar un solo punto por tus compras.</div></div>
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">Tarjetas principales que debes conocer</p>
+      <div class="card-list">
+        <div class="card-item"><div><div class="card-item-name">Chase Sapphire Preferred</div><div class="card-item-desc">$95/año · Ideal para principiantes · transfiere a 14+ aerolíneas y hoteles</div></div><div class="card-item-bonus">60k pts</div></div>
+        <div class="card-item"><div><div class="card-item-name">Chase Sapphire Reserve</div><div class="card-item-desc">$795/año · Crédito de $300 en viajes · acceso a salas VIP</div></div><div class="card-item-bonus">60k pts</div></div>
+        <div class="card-item"><div><div class="card-item-name">Amex Gold Card</div><div class="card-item-desc">$325/año · 4x en restaurantes y supermercados · transfiere a Delta y más</div></div><div class="card-item-bonus">60k pts</div></div>
+        <div class="card-item"><div><div class="card-item-name">Capital One Venture X</div><div class="card-item-desc">$395/año · Ganancia a tarifa plana · acceso a salas VIP · 12+ socios de transferencia</div></div><div class="card-item-bonus">75k pts</div></div>
+        <div class="card-item"><div><div class="card-item-name">Bilt Mastercard</div><div class="card-item-desc">$0/año · Bilt 2.0, gana en renta Y pagos de hipoteca · transfiere a 14+ socios</div></div><div class="card-item-bonus">Sin bono</div></div>
+      </div>
+      <div class="tip-box"><i class="ti ti-bulb" aria-hidden="true"></i><div class="tip-text"><strong>No necesitas 10 tarjetas.</strong> Empieza con UNA buena tarjeta. Aprende cómo funcionan los puntos. Luego amplía cuando te sientas cómodo con el sistema.</div></div>
+      <div class="divider"></div>
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:6px;">No olvides compartir tu enlace de referido</p>
+      <p style="font-size:12px;color:#475569;margin-bottom:10px;line-height:1.6;">Una vez que tienes una tarjeta, el banco te da un enlace personal de referido. Cuando un amigo aplica a través de tu enlace y es aprobado, los dos ganan. Chase, Amex, Capital One y Bilt tienen programas de referidos que pagan entre 10,000 y 30,000 puntos por cada referido aprobado.</p>
+      <div class="example-box"><div class="example-label">Puntos fáciles que probablemente estás dejando ir</div><div class="example-text">Refiere a 3 amigos al Chase Sapphire Preferred y los tres son aprobados. Eso puede ser hasta <strong>45,000 puntos de bono</strong> en tu cuenta. Sin gastar un solo dólar.</div></div>
+      <div class="divider"></div>
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:6px;">¿Tienes un negocio? También deberías tener una tarjeta de negocio</p>
+      <p style="font-size:12px;color:#475569;margin-bottom:10px;line-height:1.6;">Las tarjetas de negocio ganan puntos en gastos de empresa como software, publicidad y envíos. Ese gasto ya está ocurriendo de todas formas. Las tarjetas de negocio también tienen bonos de bienvenida separados de tus tarjetas personales.</p>
+      <div class="cat-list" style="margin-bottom:14px;">
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><div style="display:flex;align-items:center;gap:10px;width:100%;"><div class="cat-icon">💼</div><div class="cat-name" style="font-weight:800;">Amex Business Gold</div><div class="cat-mult" style="color:#059669;">4x en top 2 categorías</div></div><div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Gana 4x automáticamente en tus dos categorías con más gasto cada mes.</div></div>
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><div style="display:flex;align-items:center;gap:10px;width:100%;"><div class="cat-icon">💼</div><div class="cat-name" style="font-weight:800;">Ink Business Preferred (Chase)</div><div class="cat-mult" style="color:#0ea5e9;">3x en viajes y publicidad</div></div><div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">3x en viajes, envíos, publicidad e internet. Los puntos van al mismo grupo que tu Sapphire personal. $95 de cuota anual.</div></div>
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><div style="display:flex;align-items:center;gap:10px;width:100%;"><div class="cat-icon">💼</div><div class="cat-name" style="font-weight:800;">Capital One Spark Miles</div><div class="cat-mult" style="color:#d97706;">2x en todo</div></div><div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">2x plano en todas las compras. Los mismos socios de transferencia que el Venture X.</div></div>
+      </div>
+      <div class="warn-box"><i class="ti ti-alert-triangle" aria-hidden="true"></i><div class="warn-text"><strong>Si te gusta viajar, no uses una tarjeta de solo efectivo de regreso.</strong> Tarjetas como la Citi Double Cash no se pueden transferir a aerolíneas. Estás cambiando un vuelo gratis por un pequeño crédito. Consigue una tarjeta que gane puntos transferibles.</div></div>
+    `
+  },
+  {
+    icon: 'ti-trending-up', num: '02',
+    title: 'Gana Puntos Todos los Días',
+    subtitle: 'Tus gastos diarios te están dejando vuelos gratis sobre la mesa.',
+    content: () => `
+      <div class="big-idea">Cada dólar que gastas con tu tarjeta gana puntos. Pero algunas categorías ganan mucho más. Esto se llama multiplicador. Entre más alto el número, más puntos ganas por dólar.</div>
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">Tasas de ganancia comunes</p>
+      <div class="cat-list">
+        <div class="cat-row"><div class="cat-icon">🍽️</div><div class="cat-name">Restaurantes</div><div class="cat-mult">3 a 5x</div><div class="cat-pts">$100 → 300 a 500 pts</div></div>
+        <div class="cat-row"><div class="cat-icon">✈️</div><div class="cat-name">Vuelos y hoteles</div><div class="cat-mult">3 a 5x</div><div class="cat-pts">$100 → 300 a 500 pts</div></div>
+        <div class="cat-row"><div class="cat-icon">🛒</div><div class="cat-name">Supermercados</div><div class="cat-mult">2 a 6x</div><div class="cat-pts">$100 → 200 a 600 pts</div></div>
+        <div class="cat-row"><div class="cat-icon">⛽</div><div class="cat-name">Gasolineras</div><div class="cat-mult">2 a 3x</div><div class="cat-pts">$100 → 200 a 300 pts</div></div>
+        <div class="cat-row" style="opacity:0.6;"><div class="cat-icon">🛍️</div><div class="cat-name">Todo lo demás</div><div class="cat-mult">1x</div><div class="cat-pts">$100 → 100 pts</div></div>
+      </div>
+      <div class="divider"></div>
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:6px;">Portales de compras, puntos de bono gratis en cada compra en línea</p>
+      <p style="font-size:12px;color:#475569;margin-bottom:12px;line-height:1.5;">Antes de comprar cualquier cosa en línea, pasa primero por un portal de compras. La tienda le paga una comisión al portal y el portal te da parte de eso a ti como puntos. Pagas exactamente el mismo precio.</p>
+      <div class="portal-compare" style="margin-bottom:14px;"><div class="portal-side without"><div class="portal-lbl">Compra normal</div><div class="portal-pts">300 pts</div><div class="portal-lbl">$100 en Nike · 3x tarjeta</div></div><div class="portal-arrow">→</div><div class="portal-side with"><div class="portal-lbl">Pasa por el portal primero</div><div class="portal-pts">800 pts</div><div class="portal-lbl">3x tarjeta + 5x portal</div></div></div>
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">Portales que vale la pena conocer</p>
+      <div class="cat-list">
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><div style="display:flex;align-items:center;gap:10px;width:100%;"><div class="cat-icon">🛍️</div><div class="cat-name" style="font-weight:800;">Rakuten</div><div class="cat-mult" style="color:#059669;">El mejor</div></div><div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Funciona con más de 3,500 tiendas. Si tienes una tarjeta Amex, puedes configurarlo para pagarte en puntos Amex en lugar de efectivo. Descarga la extensión del navegador para no olvidarlo.</div></div>
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><div style="display:flex;align-items:center;gap:10px;width:100%;"><div class="cat-icon">🔍</div><div class="cat-name" style="font-weight:800;">RoveMiles</div><div class="cat-mult" style="color:#0ea5e9;">Para millas</div></div><div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Busca entre varios portales y te muestra cuál da más millas por dólar en cada tienda. Perfecto cuando necesitas completar millas en una cuenta específica.</div></div>
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><div style="display:flex;align-items:center;gap:10px;width:100%;"><div class="cat-icon">💰</div><div class="cat-name" style="font-weight:800;">CashMonitor</div><div class="cat-mult" style="color:#d97706;">Compara todo</div></div><div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Compara tasas de efectivo de regreso en todos los portales principales lado a lado. 30 segundos antes de comprar algo caro.</div></div>
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><div style="display:flex;align-items:center;gap:10px;width:100%;"><div class="cat-icon">🏦</div><div class="cat-name" style="font-weight:800;">Portales de bancos</div><div class="cat-mult" style="color:#7c3aed;">Apilables</div></div><div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Chase, Amex, Citi y Capital One tienen sus propios portales. Combina el portal del banco CON Rakuten en la misma compra cuando sea posible para bonos dobles.</div></div>
+      </div>
+      <div class="tip-box"><i class="ti ti-bulb" aria-hidden="true"></i><div class="tip-text"><strong>Instala la extensión de Rakuten hoy.</strong> Aparece automáticamente en tiendas que califican. Gratis, toma 2 minutos configurarla.</div></div>
+      <div class="divider"></div>
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:6px;">Puede que ya tengas millas sin reclamar</p>
+      <p style="font-size:12px;color:#475569;margin-bottom:10px;line-height:1.6;">Mucha gente ha volado, pagado en efectivo y nunca se inscribió en el programa de lealtad de la aerolínea. Esos vuelos ganaron cero millas. La aerolínea se las quedó.</p>
+      <div class="warn-box" style="margin-bottom:10px;"><i class="ti ti-alert-triangle" aria-hidden="true"></i><div class="warn-text"><strong>Cada vez que vuelas sin un número de programa de lealtad en tu boleto, pierdes esas millas para siempre.</strong></div></div>
+      <div class="example-box"><div class="example-label">Situación real</div><div class="example-text">Volaste de regreso y vuelta de Los Ángeles a Nueva York 4 veces este año en Delta sin cuenta SkyMiles. Eso son aproximadamente <strong>18,000 millas perdidas</strong>, o unos <strong>$360 en viajes gratis dejados sobre la mesa</strong>.</div></div>
+      <div class="steps-list" style="margin-bottom:14px;">
+        <div class="step-item"><div class="step-item-num">1</div><div class="step-item-content"><div class="step-item-title">Inscríbete en cada aerolínea que vuelas regularmente</div><div class="step-item-desc">Delta SkyMiles, United MileagePlus, American AAdvantage, Southwest Rapid Rewards. Todas son gratuitas.</div></div></div>
+        <div class="step-item"><div class="step-item-num">2</div><div class="step-item-content"><div class="step-item-title">Agrega tu número de viajero frecuente a cada reserva</div><div class="step-item-desc">Al reservar un vuelo, hay un campo para tu número de lealtad. Ponlo siempre.</div></div></div>
+        <div class="step-item"><div class="step-item-num">3</div><div class="step-item-content"><div class="step-item-title">Verifica si vuelos pasados aún pueden ser acreditados</div><div class="step-item-desc">Busca "Solicitar millas faltantes" en tu cuenta nueva. Necesitarás tu tarjeta de embarque o número de confirmación. La mayoría de aerolíneas lo permiten hasta 12 meses atrás.</div></div></div>
+      </div>
+      <div class="tip-box"><i class="ti ti-bulb" aria-hidden="true"></i><div class="tip-text"><strong>Lo mismo aplica para hoteles.</strong> ¿Te quedaste en un Hyatt, Marriott o Hilton sin número de lealtad? Inscríbete en esos programas también.</div></div>
+    `
+  },
+  {
+    icon: 'ti-coins', num: '03',
+    title: 'Entiende el Valor de tus Puntos',
+    subtitle: 'No todas las formas de usar puntos son iguales. Esta es la lección más importante.',
+    content: () => `
+      <div class="big-idea">Los puntos son como una moneda. Puedes gastarlos por poco o gastarlos inteligentemente y obtener MUCHO más valor. La clave es transferirlos a aerolíneas en lugar de canjearlos por efectivo.</div>
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:10px;">Los mismos 60,000 puntos. Tres resultados muy diferentes.</p>
+      <div class="value-row">
+        <div class="value-item"><div class="value-label" style="color:#e11d48;">Efectivo de regreso</div><div class="value-bar-bg"><div class="value-bar-fill" style="width:20%;background:#fda4af;"></div></div><div class="value-num" style="color:#e11d48;">$600</div></div>
+        <div class="value-item"><div class="value-label" style="color:#d97706;">Pagar vuelos</div><div class="value-bar-bg"><div class="value-bar-fill" style="width:40%;background:#fcd34d;"></div></div><div class="value-num" style="color:#d97706;">$750 a $900</div></div>
+        <div class="value-item"><div class="value-label" style="color:#059669;">Transferir a aerolíneas</div><div class="value-bar-bg"><div class="value-bar-fill" style="width:85%;background:#6ee7b7;"></div></div><div class="value-num" style="color:#059669;">$900 a $1,800+</div></div>
+        <div class="value-item"><div class="value-label" style="color:#0ea5e9;">Cabina premium</div><div class="value-bar-bg"><div class="value-bar-fill" style="width:100%;background:#7dd3fc;"></div></div><div class="value-num" style="color:#0ea5e9;">$2,000+</div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="calc-box">
+        <div class="calc-title">Calcula el valor de tus puntos</div>
+        <div class="calc-input-row"><label>Tengo</label><input type="number" id="pts-input" value="75000" inputmode="numeric" oninput="calcPtsValue()"><label>puntos</label></div>
+        <div class="calc-results">
+          <div class="calc-result bad"><div class="calc-result-val" id="val-cash">$750</div><div class="calc-result-lbl">Efectivo (1¢)</div></div>
+          <div class="calc-result ok"><div class="calc-result-val" id="val-book">$937</div><div class="calc-result-lbl">Reserva directa (1.25¢)</div></div>
+          <div class="calc-result great"><div class="calc-result-val" id="val-transfer">$1,500+</div><div class="calc-result-lbl">Transferir a aerolínea (2¢+)</div></div>
+        </div>
+      </div>
+      <div class="example-box"><div class="example-label">Piénsalo así</div><div class="example-text">Tus puntos del banco son como una tarjeta de regalo. Puedes usarlos en la tienda del banco, lo cual está bien. O puedes convertirlos en millas de aerolínea. Un asiento de clase ejecutiva a Europa que cuesta <strong>$4,000 en efectivo</strong> puede costarte solo <strong>60,000 puntos y $50 en impuestos</strong>.</div></div>
+      <div class="warn-box"><i class="ti ti-alert-triangle" aria-hidden="true"></i><div class="warn-text"><strong>No canjees tus puntos por tarjetas de regalo.</strong> Te dan 1 centavo por punto, el peor valor posible. Transfiere a aerolíneas y obtén 2 a 6 veces más valor.</div></div>
+    `
+  },
+  {
+    icon: 'ti-map', num: '04',
+    title: 'Planea tu Viaje',
+    subtitle: 'Elige un destino y construye tu estrategia de puntos alrededor de él.',
+    content: () => `
+      <div class="big-idea">Antes de transferir un solo punto, necesitas un plan. Descubre a dónde vas, qué aerolínea vuela allí y si tu banco puede llevarte.</div>
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">Sigue este camino cada vez</p>
+      <div class="steps-list">
+        <div class="step-item"><div class="step-item-num">1</div><div class="step-item-content"><div class="step-item-title">Elige tu destino</div><div class="step-item-desc">¿A dónde quieres ir? Piensa en grande. Los viajes con puntos hacen que la clase ejecutiva a Europa o Japón sea realmente alcanzable.</div></div></div>
+        <div class="step-item"><div class="step-item-num">2</div><div class="step-item-content"><div class="step-item-title">Busca el precio en efectivo</div><div class="step-item-desc">Ve a Google Flights y busca cuánto cuesta el vuelo en efectivo. Este es tu punto de referencia para saber qué tan buena es tu oferta con puntos.</div></div></div>
+        <div class="step-item"><div class="step-item-num">3</div><div class="step-item-content"><div class="step-item-title">Encuentra qué aerolínea vuela allí</div><div class="step-item-desc">¿United, Delta, American, British Airways? No tienes que volar en la aerolínea cuyas millas usas. Puedes reservar en una y volar en otra de la misma alianza.</div></div></div>
+        <div class="step-item"><div class="step-item-num">4</div><div class="step-item-content"><div class="step-item-title">Verifica si tu banco transfiere allí</div><div class="step-item-desc">¿Chase, Amex, Citi o Capital One transfieren a esa aerolínea? Usa el Explorador de Socios de AviTravelz para ver todas las opciones.</div></div></div>
+        <div class="step-item"><div class="step-item-num">5</div><div class="step-item-content"><div class="step-item-title">Busca un bono de transferencia</div><div class="step-item-desc">A veces los bancos ofrecen 25 a 40% extra de millas al transferir. Un bono del 30% sobre 50,000 puntos son 15,000 millas gratis. Vale la pena verificar antes de transferir.</div></div></div>
+      </div>
+      <div class="example-box"><div class="example-label">Ejemplo completo: Londres en clase ejecutiva</div><div class="example-text">Precio en efectivo: <strong>$3,800 ida y vuelta</strong><br>Aerolínea: British Airways vuela directo desde Nueva York<br>Tu banco: Chase transfiere a British Avios a 1:1<br>Costo del premio: <strong>50,000 Avios y $50 en impuestos</strong><br>Tu valor: 3,800 ÷ 50,000 = <strong>7.5 centavos por punto</strong>. Trato increíble.</div></div>
+      <div class="tip-box"><i class="ti ti-bulb" aria-hidden="true"></i><div class="tip-text"><strong>La flexibilidad es tu superpoder.</strong> Si puedes volar martes en lugar de viernes, o salir en marzo en lugar de junio, tus puntos van mucho más lejos. Las fechas pico cuestan 2 a 3 veces más puntos.</div></div>
+    `
+  },
+  {
+    icon: 'ti-search', num: '05',
+    title: 'Encuentra tu Asiento de Premio',
+    subtitle: 'Encuentra el asiento primero. Nunca transfieras puntos antes de confirmarlo.',
+    content: () => `
+      <div class="warn-box"><i class="ti ti-alert-triangle" aria-hidden="true"></i><div class="warn-text"><strong>Regla de oro: Nunca transfieras puntos hasta que puedas ver que el asiento de premio está disponible.</strong> Las transferencias son de una sola vía. Una vez que salen de tu cuenta bancaria, no puedes recuperarlos.</div></div>
+      <div class="big-idea">Un asiento de premio es un vuelo que la aerolínea ha hecho disponible para reservar con millas. No todos los asientos en todos los vuelos están disponibles como premio. Tienes que buscar uno que sí lo esté.</div>
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">Cómo buscar espacio de premio</p>
+      <div class="steps-list">
+        <div class="step-item"><div class="step-item-num">1</div><div class="step-item-content"><div class="step-item-title">Ve al sitio web de la aerolínea</div><div class="step-item-desc">Busca la opción "Reservar con millas," "Viajes de premio" o "Usar millas" en la página de búsqueda de vuelos.</div></div></div>
+        <div class="step-item"><div class="step-item-num">2</div><div class="step-item-content"><div class="step-item-title">Busca en tus fechas y también en fechas flexibles</div><div class="step-item-desc">Si tu fecha exacta no tiene disponibilidad, prueba los días antes y después. La mayoría de los calendarios de aerolíneas te permiten ver el mes completo.</div></div></div>
+        <div class="step-item"><div class="step-item-num">3</div><div class="step-item-content"><div class="step-item-title">Busca premios "Saver"</div><div class="step-item-desc">Las aerolíneas ofrecen dos niveles: Saver (barato, asientos limitados) y Standard o Anytime (más caro). Siempre apunta al Saver primero.</div></div></div>
+        <div class="step-item"><div class="step-item-num">4</div><div class="step-item-content"><div class="step-item-title">Verifica los impuestos y cargos</div><div class="step-item-desc">Algunas aerolíneas cobran cargos bajos ($25 a $75). Otras cobran cargos brutales ($500+). British Airways y Lufthansa son conocidas por cargos altos. Virgin Atlantic y United son mucho más baratas.</div></div></div>
+        <div class="step-item"><div class="step-item-num">5</div><div class="step-item-content"><div class="step-item-title">Prueba aerolíneas socias</div><div class="step-item-desc">Puedes reservar vuelos de American Airlines usando Avios de British Airways, o vuelos de Delta usando millas de Virgin Atlantic. Las búsquedas de socios a veces muestran más disponibilidad a mejores precios.</div></div></div>
+      </div>
+      <div class="tip-box"><i class="ti ti-bulb" aria-hidden="true"></i><div class="tip-text"><strong>Mejores días para buscar:</strong> Los asientos de premio tienden a abrirse 330 días antes del vuelo y también cerca de la salida cuando las aerolíneas liberan asientos sin vender. Los vuelos a mitad de semana tienen más disponibilidad.</div></div>
+      <div class="divider"></div>
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:6px;">Herramientas de búsqueda de premios que hacen el trabajo duro por ti</p>
+      <p style="font-size:12px;color:#475569;margin-bottom:10px;line-height:1.6;">Buscar aerolínea por aerolínea es lento. Estos sitios buscan disponibilidad en varias aerolíneas a la vez para que encuentres asientos disponibles rápidamente.</p>
+      <div class="cat-list" style="margin-bottom:14px;">
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><div style="display:flex;align-items:center;gap:10px;width:100%;"><div class="cat-icon">🪑</div><div class="cat-name" style="font-weight:800;">seats.aero</div><div class="cat-mult" style="color:#059669;">El favorito</div></div><div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Busca disponibilidad de premios en docenas de programas a la vez. Escribe tu ruta y te muestra qué aerolíneas tienen asientos y con qué programas puedes reservarlos.</div></div>
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><div style="display:flex;align-items:center;gap:10px;width:100%;"><div class="cat-icon">📍</div><div class="cat-name" style="font-weight:800;">point.me</div><div class="cat-mult" style="color:#0ea5e9;">Socio de Amex y Bilt</div></div><div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Te muestra las mejores formas de usar tus puntos según lo que tienes. Amex y Bilt son socios oficiales, así que obtienes funciones de búsqueda mejoradas con esas tarjetas.</div></div>
+        <div class="cat-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><div style="display:flex;align-items:center;gap:10px;width:100%;"><div class="cat-icon">🗺️</div><div class="cat-name" style="font-weight:800;">roame.travel</div><div class="cat-mult" style="color:#d97706;">Fechas flexibles</div></div><div style="font-size:12px;color:#475569;padding-left:38px;line-height:1.5;">Perfecto si tus fechas son flexibles. Eliges tu aeropuerto y una región, y te muestra todos los vuelos de premio disponibles en un rango de fechas.</div></div>
+      </div>
+      <div class="example-box"><div class="example-label">Movimiento inteligente: reserva en una, vuela en otra</div><div class="example-text">En lugar de reservar Delta directamente (caro), busca vuelos de Delta en Virgin Atlantic Flying Club. Mismo asiento. Mismo avión. A menudo <strong>50,000 millas de Virgin en lugar de 300,000+ SkyMiles de Delta</strong>.</div></div>
+      <div class="tip-box"><i class="ti ti-bulb" aria-hidden="true"></i><div class="tip-text"><strong>Usa estas herramientas para confirmar que el asiento existe ANTES de transferir nada.</strong> Encuentra el vuelo en seats.aero o point.me, verifica que se puede reservar, luego transfiere tus puntos y completa la reserva. Nunca al revés.</div></div>
+    `
+  },
+  {
+    icon: 'ti-transfer', num: '06',
+    title: 'Transfiere y Reserva',
+    subtitle: 'Encontraste el asiento. Ahora mueve tus puntos y confírmalo.',
+    content: () => `
+      <div class="big-idea">Ya hiciste el trabajo difícil. El asiento está disponible. Ahora transfieres los puntos del banco a la aerolínea y usas esas millas para completar la reserva.</div>
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">Cómo transferir puntos</p>
+      <div class="steps-list">
+        <div class="step-item"><div class="step-item-num">1</div><div class="step-item-content"><div class="step-item-title">Entra a la app o sitio web de tu banco</div><div class="step-item-desc">Chase, Amex, Citi, Capital One, todos tienen una sección de transferencia en el área de recompensas o viajes.</div></div></div>
+        <div class="step-item"><div class="step-item-num">2</div><div class="step-item-content"><div class="step-item-title">Busca "Transferir puntos" o "Socios de viaje"</div><div class="step-item-desc">Selecciona la aerolínea que identificaste en el Paso 5.</div></div></div>
+        <div class="step-item"><div class="step-item-num">3</div><div class="step-item-content"><div class="step-item-title">Ingresa tu número de cuenta de lealtad</div><div class="step-item-desc">Necesitarás una cuenta de viajero frecuente con la aerolínea. Si no tienes una, inscríbete gratis en el sitio web de la aerolínea. Toma 2 minutos.</div></div></div>
+        <div class="step-item"><div class="step-item-num">4</div><div class="step-item-content"><div class="step-item-title">Transfiere solo lo que necesitas</div><div class="step-item-desc">Transfiere el número exacto de millas que cuesta el premio. No necesitas transferir todo.</div></div></div>
+        <div class="step-item"><div class="step-item-num">5</div><div class="step-item-content"><div class="step-item-title">Espera a que lleguen las millas (usualmente instantáneo)</div><div class="step-item-desc">La mayoría de transferencias son instantáneas o tardan unos minutos. Algunas toman 24 a 72 horas. Una vez que aparezcan, ve a reservar de inmediato.</div></div></div>
+      </div>
+      <div class="divider"></div>
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">Lista de verificación, toca cada item cuando lo completes</p>
+      <div class="checklist" id="checklist">
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-circle"><i class="ti ti-check" aria-hidden="true"></i></div><div class="check-text">Confirmé que el asiento de premio está disponible antes de transferir</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-circle"><i class="ti ti-check" aria-hidden="true"></i></div><div class="check-text">Transferí el número correcto de millas a la aerolínea correcta</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-circle"><i class="ti ti-check" aria-hidden="true"></i></div><div class="check-text">Las millas aparecieron en mi cuenta de lealtad de aerolínea</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-circle"><i class="ti ti-check" aria-hidden="true"></i></div><div class="check-text">Volví al sitio web de la aerolínea y encontré el mismo asiento</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-circle"><i class="ti ti-check" aria-hidden="true"></i></div><div class="check-text">Completé la reserva y pagué impuestos y cargos</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-circle"><i class="ti ti-check" aria-hidden="true"></i></div><div class="check-text">Tomé una captura de pantalla de la confirmación y la guardé</div></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-circle"><i class="ti ti-check" aria-hidden="true"></i></div><div class="check-text">Hice el check-in 24 horas antes del vuelo</div></div>
+      </div>
+      <div class="warn-box"><i class="ti ti-alert-triangle" aria-hidden="true"></i><div class="warn-text"><strong>Las transferencias son de una sola vía y permanentes.</strong> Una vez que envías puntos a una aerolínea, no pueden regresar. Confirma siempre que el asiento está disponible PRIMERO. Este es el error número uno que cometen los nuevos viajeros.</div></div>
+    `
+  },
+  {
+    icon: 'ti-star', num: '07',
+    title: 'Listo. A Volar.',
+    subtitle: 'Ahora sabes más de viajes con puntos que la mayoría de las personas.',
+    content: () => `
+      <div class="big-idea">Los viajes con puntos no son magia. Son un sistema. Una vez que entiendes el sistema, vuelos que le cuestan a otros $4,000 te costarán $50 en cargos y una pila de puntos que ganaste solo viviendo tu vida normal.</div>
+      <p style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">Resumen rápido, el sistema de 6 pasos</p>
+      <div class="info-grid">
+        <div class="info-box teal"><div class="info-box-icon">💳</div><div class="info-box-title">Paso 1</div><div class="info-box-text">Consigue una tarjeta con un bono de bienvenida grande</div></div>
+        <div class="info-box green"><div class="info-box-icon">📈</div><div class="info-box-title">Paso 2</div><div class="info-box-text">Gana todos los días: categorías de gasto y portales de compras</div></div>
+        <div class="info-box amber"><div class="info-box-icon">💰</div><div class="info-box-title">Paso 3</div><div class="info-box-text">Conoce el valor de tus puntos. Transferir supera el efectivo.</div></div>
+        <div class="info-box purple"><div class="info-box-icon">🗺️</div><div class="info-box-title">Paso 4</div><div class="info-box-text">Planea tu viaje y conecta tu banco con la aerolínea</div></div>
+        <div class="info-box teal"><div class="info-box-icon">🔍</div><div class="info-box-title">Paso 5</div><div class="info-box-text">Encuentra el asiento de premio ANTES de transferir nada</div></div>
+        <div class="info-box green"><div class="info-box-icon">✈️</div><div class="info-box-title">Paso 6</div><div class="info-box-text">Transfiere y reserva. Guarda una captura de tu confirmación.</div></div>
+      </div>
+      <div class="example-box"><div class="example-label">Lo que es posible con 100,000 puntos</div><div class="example-text">Clase ejecutiva a Europa → <strong>60,000 a 80,000 puntos y ~$50</strong> (vs $3,500 en efectivo)<br>Clase ejecutiva a Japón → <strong>90,000 puntos y ~$80</strong> (vs $5,000 en efectivo)<br>Primera clase doméstica ida y vuelta → <strong>25,000 a 35,000 puntos</strong> (vs $600 en efectivo)<br>5 noches en un Park Hyatt → <strong>25,000 a 40,000 puntos Hyatt</strong> (vs $1,500 en efectivo)</div></div>
+      <div class="tip-box"><i class="ti ti-bulb" aria-hidden="true"></i><div class="tip-text"><strong>Usa las herramientas de AviTravelz:</strong> El <strong>Explorador de Socios</strong> muestra qué bancos conectan con qué aerolíneas. La <strong>Calculadora</strong> te dice si un canje vale la pena. El <strong>Explorador de Asientos</strong> muestra qué obtienes antes de reservar.</div></div>
+      <div class="tip-box" style="background:#eff6ff;border-color:#bfdbfe;"><i class="ti ti-heart" aria-hidden="true" style="color:#2563eb;"></i><div class="tip-text" style="color:#1e3a8a;"><strong>Comparte esta guía.</strong> Los viajes con puntos son una habilidad que la mayoría nunca aprende, pero una vez que lo haces, cambia para siempre cómo ves los viajes. Comparte AviTravelz con cualquiera que quiera viajar más por menos.</div></div>
+    `
+  }
+];
+
+// ─── LOGIC ─────────────────────────────────────────────────────────────────
+
+function activeSteps() { return currentLang === 'es' ? STEPS_ES : STEPS; }
+
+let currentStep = 0;
+
+function showIntro() {
+  document.getElementById('wizard-shell').classList.remove('visible');
+  renderIntro();
+  document.getElementById('intro-screen').classList.add('visible');
+  currentStep = 0;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function startGuide() {
+  document.getElementById('intro-screen').classList.remove('visible');
+  document.getElementById('wizard-shell').classList.add('visible');
+  goStep(0);
+}
+
+function renderProgress() {
+  const steps = activeSteps();
+  const track = document.getElementById('progress-track');
+  track.innerHTML = '';
+  steps.forEach((s, i) => {
+    const node = document.createElement('div');
+    node.className = 'step-node';
+    node.onclick = () => goStep(i);
+    const cls = i < currentStep ? 'done' : i === currentStep ? 'active' : '';
+    const lCls = i < currentStep ? 'done' : i === currentStep ? 'active' : '';
+    node.innerHTML = `<div class="step-circle ${cls}">${i < currentStep ? '<i class="ti ti-check" style="font-size:14px;" aria-hidden="true"></i>' : i+1}</div><div class="step-label ${lCls}">${s.title.split(' ').slice(0,3).join(' ')}</div>`;
+    track.appendChild(node);
+    if (i < steps.length - 1) {
+      const conn = document.createElement('div');
+      conn.className = 'connector' + (i < currentStep ? ' done' : '');
+      track.appendChild(conn);
+    }
+  });
+  const pct = Math.round((currentStep / (steps.length - 1)) * 100);
+  const label = currentLang === 'es' ? `Paso ${currentStep + 1} de ${steps.length} · ${pct}% completado` : `Step ${currentStep + 1} of ${steps.length} · ${pct}% complete`;
+  document.getElementById('progress-pct').textContent = label;
+}
+
+function renderMain() {
+  const steps = activeSteps();
+  const s = steps[currentStep];
+  const stepLabel = currentLang === 'es' ? 'Paso' : 'Step';
+  document.getElementById('main-card').innerHTML = `
+    <div class="card-top">
+      <div class="step-icon-big"><i class="ti ${s.icon}" aria-hidden="true"></i></div>
+      <div>
+        <div class="step-num-label">${stepLabel} ${s.num}</div>
+        <div class="step-title">${s.title}</div>
+        <div class="step-subtitle">${s.subtitle}</div>
+      </div>
+    </div>
+    <div class="card-body">${s.content()}</div>
+  `;
+
+  if (currentStep === 2) calcPtsValue();
+
+  const prevBtn = document.getElementById('btn-prev');
+  prevBtn.disabled = currentStep === 0;
+  prevBtn.innerHTML = currentLang === 'es' ? '<i class="ti ti-arrow-left" aria-hidden="true"></i> Atrás' : '<i class="ti ti-arrow-left" aria-hidden="true"></i> Back';
+
+  const nextBtn = document.getElementById('btn-next');
+  if (currentStep === steps.length - 1) {
+    nextBtn.className = 'nav-btn finish';
+    nextBtn.innerHTML = currentLang === 'es' ? '<i class="ti ti-home" aria-hidden="true"></i> Volver al inicio' : '<i class="ti ti-home" aria-hidden="true"></i> Start Over';
+    nextBtn.onclick = () => showIntro();
+  } else {
+    nextBtn.className = 'nav-btn next';
+    nextBtn.innerHTML = currentLang === 'es' ? 'Siguiente <i class="ti ti-arrow-right" aria-hidden="true"></i>' : 'Next <i class="ti ti-arrow-right" aria-hidden="true"></i>';
+    nextBtn.onclick = () => goStep(currentStep + 1);
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goStep(n) {
+  const steps = activeSteps();
+  if (n < 0 || n >= steps.length) return;
+  currentStep = n;
+  renderProgress();
+  renderMain();
+}
+
+function calcPtsValue() {
+  const el = document.getElementById('pts-input');
+  if (!el) return;
+  const pts = parseInt(el.value) || 0;
+  const cash = (pts * 0.01).toLocaleString('en-US', { style:'currency', currency:'USD', maximumFractionDigits:0 });
+  const book = (pts * 0.0125).toLocaleString('en-US', { style:'currency', currency:'USD', maximumFractionDigits:0 });
+  const transfer = (pts * 0.02).toLocaleString('en-US', { style:'currency', currency:'USD', maximumFractionDigits:0 }) + '+';
+  const cv = document.getElementById('val-cash'); if (cv) cv.textContent = cash;
+  const bv = document.getElementById('val-book'); if (bv) bv.textContent = book;
+  const tv = document.getElementById('val-transfer'); if (tv) tv.textContent = transfer;
+}
+
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+}
+
+function setLang(l) {
+  currentLang = l;
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.className = 'lang-btn ' + (b.dataset.lang === l ? 'active' : 'inactive');
+  });
+  if (document.getElementById('wizard-shell').classList.contains('visible')) {
+    renderProgress();
+    renderMain();
+  } else {
+    renderIntro();
+  }
+}
+
+// Start
+renderIntro();
+document.getElementById('intro-screen').classList.add('visible');
+</script>
+</body>
+</html>
