@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AviTravelz — Partner Explorer</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f3fb; color: #111827; min-height: 100vh; padding: 12px; }
+    .container { max-width: 740px; margin: 0 auto; }
+
+    .brand-bar { background: #3C3489; border-radius: 14px; padding: 14px 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+    .brand-icon { width: 42px; height: 42px; border-radius: 10px; background: #534AB7; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .brand-icon i { font-size: 22px; color: #fff; }
+    .brand-title { font-size: 20px; font-weight: 700; color: #fff; }
+    .brand-sub { font-size: 12px; color: #AFA9EC; margin-top: 2px; }
+
+    .tab-row { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+    .tab-row::-webkit-scrollbar { display: none; }
+    .tab { padding: 8px 16px; font-size: 13px; white-space: nowrap; border: 1.5px solid #d1d5db; border-radius: 20px; cursor: pointer; background: #fff; color: #6b7280; flex-shrink: 0; }
+    .tab.active { background: #3C3489; color: #fff; border-color: #3C3489; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .info-box { border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; font-size: 13px; line-height: 1.6; }
+    .info-box.purple { background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; }
+    .info-box.amber  { background: #fffbeb; border: 1px solid #fde68a; color: #78350f; }
+
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+    .card-title { font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+
+    .alliance-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 12px; }
+    .alliance-card { border-radius: 12px; padding: 14px 12px; cursor: pointer; border: 2px solid transparent; text-align: center; transition: transform 0.12s; }
+    .alliance-card:hover { transform: translateY(-1px); }
+    .alliance-name { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+    .alliance-count { font-size: 11px; opacity: 0.65; }
+
+    .airlines-section { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 16px; margin-bottom: 10px; }
+    .section-label { font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+    .chip-area { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+    .chip { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1.5px solid transparent; transition: all 0.12s; }
+    .chip.dim { opacity: 0.55; font-size: 11px; padding: 5px 10px; }
+    .chip:hover { opacity: 1; filter: brightness(0.95); }
+
+    .detail-panel { border-radius: 12px; padding: 16px; margin-top: 10px; border-left: 4px solid; display: none; }
+    .detail-panel.visible { display: block; }
+    .detail-airline { font-size: 16px; font-weight: 700; margin-bottom: 3px; }
+    .detail-sub { font-size: 12px; opacity: 0.65; margin-bottom: 12px; }
+    .mini-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; opacity: 0.55; margin-bottom: 6px; }
+    .book-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .book-chip { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .pro-tip { border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.55; }
+    .no-tip { font-size: 13px; opacity: 0.6; font-style: italic; }
+
+    .flow-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .step-num { width: 20px; height: 20px; background: #3C3489; color: #fff; border-radius: 50%; font-size: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .bank-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .bank-pill { padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; color: #fff; border: 2px solid transparent; opacity: 0.72; transition: all 0.15s; }
+    .bank-pill.active { opacity: 1; box-shadow: 0 2px 8px rgba(0,0,0,0.18); border-color: rgba(255,255,255,0.35); }
+    .flow-arrow { text-align: center; color: #d1d5db; margin: 6px 0; font-size: 20px; }
+    .program-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px,1fr)); gap: 8px; }
+    .program-card { border-radius: 10px; padding: 10px 12px; cursor: pointer; border: 2px solid transparent; transition: all 0.12s; text-align: left; }
+    .program-card:hover { filter: brightness(0.96); }
+    .program-card.active { border-color: #3C3489 !important; }
+    .prog-name { font-size: 12px; font-weight: 600; margin-bottom: 3px; line-height: 1.3; }
+    .prog-ratio { font-size: 11px; opacity: 0.65; }
+    .prog-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 10px; display: inline-block; margin-top: 4px; }
+    .result-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); gap: 8px; }
+    .result-card { border-radius: 10px; padding: 10px 12px; cursor: pointer; border: 2px solid transparent; transition: all 0.12s; }
+    .result-card:hover { border-color: #a5b4fc; }
+    .result-card.active { border-color: #3C3489; background: #eef2ff !important; }
+    .result-code { font-size: 16px; font-weight: 800; }
+    .result-name { font-size: 11px; color: #6b7280; margin-top: 1px; line-height: 1.3; }
+    .tip-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px; font-size: 13px; line-height: 1.6; color: #78350f; margin-top: 10px; display: none; }
+    .tip-box.visible { display: block; }
+    .tip-title { font-weight: 700; margin-bottom: 4px; }
+
+    .hotel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 8px; }
+    .hotel-card { border-radius: 10px; padding: 12px; cursor: pointer; border: 2px solid transparent; transition: all 0.12s; }
+    .hotel-card:hover { filter: brightness(0.96); }
+    .hotel-card.active { border-color: #3C3489 !important; }
+    .hotel-name { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+    .hotel-ratio { font-size: 11px; opacity: 0.7; }
+
+    .star-bg { background: #eff6ff; } .star-bd { border-color: #3b82f6; } .star-tx { color: #1e3a8a; }
+    .star-chip { background: #dbeafe; color: #1e3a8a; } .star-badge { background: #1e3a8a; color: #dbeafe; }
+    .ow-bg { background: #fff1f2; } .ow-bd { border-color: #f87171; } .ow-tx { color: #991b1b; }
+    .ow-chip { background: #fee2e2; color: #991b1b; } .ow-badge { background: #991b1b; color: #fee2e2; }
+    .st-bg { background: #f0fdf4; } .st-bd { border-color: #4ade80; } .st-tx { color: #065f46; }
+    .st-chip { background: #d1fae5; color: #065f46; } .st-badge { background: #065f46; color: #d1fae5; }
+    .hotel-purple { background: #f5f3ff; color: #4c1d95; } .hotel-amber { background: #fef3c7; color: #78350f; }
+    .hotel-red { background: #fff1f2; color: #991b1b; } .hotel-teal { background: #f0fdf4; color: #065f46; }
+    .hotel-violet { background: #fdf4ff; color: #701a75; }
+
+    @media (max-width: 500px) {
+      .alliance-grid { grid-template-columns: 1fr; }
+      .program-grid, .hotel-grid, .result-grid { grid-template-columns: 1fr 1fr; }
+      .brand-title { font-size: 17px; }
+    }
+    @media (max-width: 360px) {
+      .program-grid, .hotel-grid, .result-grid { grid-template-columns: 1fr; }
+    }
+    footer { text-align: center; font-size: 11px; color: #9ca3af; margin-top: 8px; padding-bottom: 16px; }
+
+    .intro-screen { display: none; }
+    .intro-screen.visible { display: block; }
+    .sim-main { display: none; }
+    .sim-main.visible { display: block; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- INTRO SCREEN -->
+  <div id="intro-screen" class="intro-screen visible">
+    <div style="background:#0c4a6e;border-radius:14px;padding:18px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px;">
+      <div style="width:44px;height:44px;border-radius:10px;background:#0e6090;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="ti ti-world" style="font-size:24px;color:#fff;"></i>
+      </div>
+      <div>
+        <div style="font-size:20px;font-weight:800;color:#fff;">Avi<span style="color:#38bdf8;">Travelz</span></div>
+        <div style="font-size:12px;color:#7dd3fc;margin-top:1px;">Partner Explorer</div>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;margin-bottom:16px;">
+      <div style="font-size:22px;font-weight:800;color:#0f172a;margin-bottom:8px;">Find the best path for your points.</div>
+      <div style="font-size:14px;color:#475569;line-height:1.6;margin-bottom:20px;">Three things here: which airlines are in each alliance, which bank programs transfer where, and who gives you the best shot at booking any specific carrier. Pick a tab and start exploring.</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
+        <div style="background:#eff6ff;border-radius:12px;padding:14px 10px;text-align:center;">
+          <div style="font-size:22px;margin-bottom:4px;">&#11088;</div>
+          <div style="font-size:11px;font-weight:700;color:#1e3a8a;line-height:1.3;">Airline Alliances</div>
+          <div style="font-size:10px;color:#3b82f6;margin-top:3px;">Star, Oneworld, SkyTeam</div>
+        </div>
+        <div style="background:#f0fdf4;border-radius:12px;padding:14px 10px;text-align:center;">
+          <div style="font-size:22px;margin-bottom:4px;">&#128179;</div>
+          <div style="font-size:11px;font-weight:700;color:#065f46;line-height:1.3;">Bank Transfers</div>
+          <div style="font-size:10px;color:#10b981;margin-top:3px;">Airlines + hotels</div>
+        </div>
+        <div style="background:#fef3c7;border-radius:12px;padding:14px 10px;text-align:center;">
+          <div style="font-size:22px;margin-bottom:4px;">&#127968;</div>
+          <div style="font-size:11px;font-weight:700;color:#78350f;line-height:1.3;">Hotel Partners</div>
+          <div style="font-size:10px;color:#f59e0b;margin-top:3px;">Hyatt, Hilton, Marriott +</div>
+        </div>
+      </div>
+
+      <div style="background:#eff6ff;border:1px solid #c7d2fe;border-radius:12px;padding:14px;font-size:13px;color:#3730a3;line-height:1.6;margin-bottom:20px;">
+        <strong>Quick tip:</strong> Use the Bank Transfer tab to find which card gives you access to a specific airline. Then flip to the Alliance tab to see which programs can book that carrier as a partner, sometimes at a way better price than booking direct.
+      </div>
+
+      <button onclick="showTool()" style="width:100%;background:#0c4a6e;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;" onmouseover="this.style.background='#0e6090'" onmouseout="this.style.background='#0c4a6e'">
+        <i class="ti ti-map-2"></i> Explore Partners
+      </button>
+    </div>
+
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;font-size:12px;color:#78350f;text-align:center;">
+      Transfer partners and ratios change often. Always verify before you transfer.
+    </div>
+  </div>
+
+  <!-- MAIN TOOL -->
+  <div id="sim-main" class="sim-main">
+    <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:6px;background:white;border:1.5px solid #e2e8f0;border-radius:8px;color:#475569;font-size:12px;font-weight:600;cursor:pointer;padding:7px 12px;margin-bottom:16px;transition:all .15s;" onmouseover="this.style.borderColor='#94a3b8'" onmouseout="this.style.borderColor='#e2e8f0'"><i class="ti ti-arrow-left" style="font-size:14px;"></i> Back to intro</button>
+
+  <div class="brand-bar">
+    <div class="brand-icon"><i class="ti ti-world" aria-hidden="true"></i></div>
+    <div>
+      <div class="brand-title">AviTravelz</div>
+      <div class="brand-sub">Airline &amp; Bank Partner Explorer</div>
+    </div>
+  </div>
+
+  <div class="tab-row">
+    <button class="tab active" onclick="switchTab('alliances',this)">Airline Alliances</button>
+    <button class="tab" onclick="switchTab('airline',this)">Bank Airline Transfer Partners</button>
+    <button class="tab" onclick="switchTab('hotel',this)">Bank Hotel Partners</button>
+  </div>
+
+  <!-- ═══ TAB 1: ALLIANCES ═══ -->
+  <div id="panel-alliances" class="panel active">
+
+    <div class="info-box purple">
+      <strong>The concept:</strong> Airlines in the same alliance are partners. You can book American Airlines using British Airways Avios — often cheaper with lower fees. Same seat, same plane, smarter price. Tap an alliance, then tap any airline to see how to book it.
+    </div>
+
+    <div class="alliance-grid">
+      <div class="alliance-card star-bg star-bd" id="btn-star" onclick="selectAlliance('star')">
+        <div style="font-size:22px;margin-bottom:6px;">⭐</div>
+        <div class="alliance-name star-tx">Star Alliance</div>
+        <div class="alliance-count star-tx">26 member airlines</div>
+      </div>
+      <div class="alliance-card ow-bg" id="btn-oneworld" onclick="selectAlliance('oneworld')">
+        <div style="font-size:22px;margin-bottom:6px;">🌐</div>
+        <div class="alliance-name ow-tx">Oneworld</div>
+        <div class="alliance-count ow-tx">13 member airlines</div>
+      </div>
+      <div class="alliance-card st-bg" id="btn-skyteam" onclick="selectAlliance('skyteam')">
+        <div style="font-size:22px;margin-bottom:6px;">🌍</div>
+        <div class="alliance-name st-tx">SkyTeam</div>
+        <div class="alliance-count st-tx">19 member airlines</div>
+      </div>
+    </div>
+
+    <div class="airlines-section" id="alliance-panel">
+      <div class="section-label" id="alliance-label">Select an alliance above</div>
+      <div class="chip-area" id="airline-chips"></div>
+      <div class="detail-panel" id="airline-detail"></div>
+    </div>
+
+  </div>
+
+  <!-- ═══ TAB 2: BANK AIRLINE PARTNERS ═══ -->
+  <div id="panel-airline" class="panel">
+    <div class="info-box purple">
+      <strong>The chain:</strong> Transfer bank points to a loyalty program, then use those miles to book any partner airline in that alliance. Tap your bank, pick a program, then tap an airline to see the booking tip.
+    </div>
+
+    <div class="card">
+      <div class="flow-label"><span class="step-num">1</span> Pick your bank</div>
+      <div class="bank-pills" id="air-bank-pills"></div>
+    </div>
+
+    <div class="flow-arrow"><i class="ti ti-arrow-down" aria-hidden="true"></i></div>
+
+    <div class="card">
+      <div class="flow-label"><span class="step-num">2</span> Pick a transfer program</div>
+      <div class="program-grid" id="air-program-grid">
+        <p style="color:#9ca3af;font-size:13px;">Select a bank above.</p>
+      </div>
+    </div>
+
+    <div class="flow-arrow"><i class="ti ti-arrow-down" aria-hidden="true"></i></div>
+
+    <div class="card">
+      <div class="flow-label"><span class="step-num">3</span> Airlines you can fly — tap for tips</div>
+      <div class="result-grid" id="air-result-grid">
+        <p style="color:#9ca3af;font-size:13px;">Select a program above.</p>
+      </div>
+      <div class="tip-box" id="air-tip"></div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB 3: BANK HOTEL PARTNERS ═══ -->
+  <div id="panel-hotel" class="panel">
+    <div class="info-box purple">
+      <strong>Hotel transfers:</strong> Most bank points transfer to hotel loyalty programs too. Value varies a lot — Hyatt is generally the best value, Hilton the lowest. Tap your bank to see which hotels you can transfer to.
+    </div>
+
+    <div class="card">
+      <div class="flow-label"><span class="step-num">1</span> Pick your bank</div>
+      <div class="bank-pills" id="hotel-bank-pills"></div>
+    </div>
+
+    <div class="flow-arrow"><i class="ti ti-arrow-down" aria-hidden="true"></i></div>
+
+    <div class="card">
+      <div class="flow-label"><span class="step-num">2</span> Hotel transfer partners — tap for tips</div>
+      <div class="hotel-grid" id="hotel-result-grid">
+        <p style="color:#9ca3af;font-size:13px;">Select a bank above.</p>
+      </div>
+      <div class="tip-box" id="hotel-tip"></div>
+    </div>
+  </div>
+
+  <footer>AviTravelz. Partnerships and transfer ratios change often. Always verify before booking.</footer>
+  </div><!-- end sim-main -->
+</div>
+
+<script>
+// ─── ALLIANCE DATA ──────────────────────────────────────────────────────────
+
+const ALLIANCES = {
+  star: {
+    name: 'Star Alliance', cls: 'star',
+    airlines: [
+      // Key partners — have booking tips
+      { id:'united',    code:'UA', name:'United Airlines',        program:'MileagePlus',     key:true,  tip:'ANA Mileage Club is the sweet spot for United transpacific business, often 55k miles vs 80k+ booking directly. Transfer Amex to ANA (the only bank that goes there directly).', bookWith:['ANA Mileage Club','Avianca LifeMiles','Air Canada Aeroplan','Singapore KrisFlyer','United MileagePlus'] },
+      { id:'aircanada', code:'AC', name:'Air Canada',             program:'Aeroplan',        key:true,  tip:'Aeroplan has a distance-based chart with no fuel surcharges on most partners. Great for booking across all of Star Alliance.', bookWith:['Air Canada Aeroplan','United MileagePlus','Avianca LifeMiles','Singapore KrisFlyer'] },
+      { id:'lufthansa', code:'LH', name:'Lufthansa',              program:'Miles & More',    key:true,  tip:'Avoid Miles & More for Lufthansa. Fuel surcharges can hit $500+. Use ANA miles (Amex only) or Avianca LifeMiles (Amex, Citi, Capital One, Bilt) instead to skip those fees.', bookWith:['ANA Mileage Club','Avianca LifeMiles','Air Canada Aeroplan','Turkish Miles & Smiles'] },
+      { id:'ana',       code:'NH', name:'ANA',                    program:'Mileage Club',    key:true,  tip:'Virgin Atlantic Flying Club books ANA first class round-trip to Japan for just 90,000 miles — one of the best sweet spots left in award travel. Transfer Chase or Amex to Virgin.', bookWith:['ANA Mileage Club','Virgin Atlantic Flying Club','Air Canada Aeroplan'] },
+      { id:'singapore', code:'SQ', name:'Singapore Airlines',     program:'KrisFlyer',       key:true,  tip:'Singapore Suites is a bucket-list product. Hard to find on partner programs but Aeroplan and Virgin Atlantic Flying Club occasionally have space.', bookWith:['KrisFlyer','Air Canada Aeroplan','Virgin Atlantic Flying Club'] },
+      { id:'turkish',   code:'TK', name:'Turkish Airlines',       program:'Miles & Smiles',  key:true,  tip:'Turkish Miles & Smiles has low region-based rates — short-haul Star Alliance hops can be as low as 7,500 miles. Transfer Citi ThankYou to Turkish.', bookWith:['Turkish Miles & Smiles','United MileagePlus','Avianca LifeMiles'] },
+      { id:'avianca',   code:'AV', name:'Avianca',                program:'LifeMiles',       key:true,  tip:'LifeMiles runs frequent promo sales and is great for booking Lufthansa and United without fuel surcharges. Amex, Citi, Capital One, Bilt, and Wells Fargo all transfer here. Chase does not.', bookWith:['Avianca LifeMiles','United MileagePlus'] },
+      { id:'swiss',     code:'LX', name:'Swiss International',    program:'Miles & More',    key:true,  tip:'Same story as Lufthansa — book Swiss with ANA miles or Avianca LifeMiles to skip the hefty fuel surcharges Miles & More charges.', bookWith:['ANA Mileage Club','Avianca LifeMiles','Air Canada Aeroplan'] },
+      { id:'tap',       code:'TP', name:'TAP Air Portugal',       program:'Miles & Go',      key:true,  tip:'Great for getting to Europe via Lisbon. United MileagePlus and Avianca LifeMiles can both book TAP as a Star Alliance partner.', bookWith:['United MileagePlus','Avianca LifeMiles','Air Canada Aeroplan'] },
+      { id:'ethiopian', code:'ET', name:'Ethiopian Airlines',     program:'ShebaMiles',      key:true,  tip:'Best coverage across Africa. Book as a Star Alliance partner using United MileagePlus or Aeroplan miles.', bookWith:['United MileagePlus','Air Canada Aeroplan'] },
+      { id:'eva',       code:'BR', name:'EVA Air',                program:'Infinity MileageLands', key:true, tip:'EVA Air business class (Royal Laurel) is excellent for Asia routes. Book with United MileagePlus or Singapore KrisFlyer as Star Alliance partners.', bookWith:['United MileagePlus','Singapore KrisFlyer','Air Canada Aeroplan'] },
+      { id:'asiana',    code:'OZ', name:'Asiana Airlines',        program:'Asiana Club',     key:true,  tip:'Asiana business class to Korea and Asia is solid. Book with United MileagePlus, Singapore KrisFlyer, or Aeroplan.', bookWith:['United MileagePlus','Singapore KrisFlyer','Air Canada Aeroplan'] },
+      // Members without detailed tips
+      { id:'airchina',  code:'CA', name:'Air China',              program:'PhoenixMiles',    key:false },
+      { id:'airindia',  code:'AI', name:'Air India',              program:'Flying Returns',  key:false },
+      { id:'airnz',     code:'NZ', name:'Air New Zealand',        program:'Airpoints',       key:false },
+      { id:'austrian',  code:'OS', name:'Austrian Airlines',      program:'Miles & More',    key:false },
+      { id:'brussels',  code:'SN', name:'Brussels Airlines',      program:'Miles & More',    key:false },
+      { id:'copa',      code:'CM', name:'Copa Airlines',          program:'ConnectMiles',    key:false },
+      { id:'croatia',   code:'OU', name:'Croatia Airlines',       program:'Miles & More',    key:false },
+      { id:'egyptair',  code:'MS', name:'EgyptAir',               program:'EgyptAir Plus',   key:false },
+      { id:'lot',       code:'LO', name:'LOT Polish Airlines',    program:'Miles & More',    key:false },
+      { id:'aegean',    code:'A3', name:'Aegean Airlines',        program:'Miles & Bonus',   key:false },
+      { id:'shenzhen',  code:'ZH', name:'Shenzhen Airlines',      program:'PhoenixMiles',    key:false },
+      { id:'thai',      code:'TG', name:'THAI Airways',           program:'Royal Orchid Plus',key:false },
+      { id:'xiamen',    code:'MF', name:'XiamenAir',              program:'PhoenixMiles',    key:false },
+    ]
+  },
+  oneworld: {
+    name: 'Oneworld', cls: 'ow',
+    airlines: [
+      { id:'american',  code:'AA', name:'American Airlines',   program:'AAdvantage',       key:true,  tip:'British Airways Avios is the best for short AA domestic flights — distance-based pricing means under 1,151 miles costs just 7,500 Avios each way, with no fuel surcharges on American metal. A major hack.', bookWith:['British Airways Avios','Alaska Mileage Plan','Cathay Pacific Asia Miles','JAL Mileage Bank','American AAdvantage'] },
+      { id:'british',   code:'BA', name:'British Airways',     program:'Avios',            key:true,  tip:'Iberia Plus is actually cheaper than BA\'s own Avios for booking British Airways flights. Both use the Avios currency but Iberia has lower rates for the same routes.', bookWith:['American AAdvantage','Alaska Mileage Plan','Iberia Plus','Cathay Pacific Asia Miles'] },
+      { id:'cathay',    code:'CX', name:'Cathay Pacific',      program:'Asia Miles',       key:true,  tip:'Cathay business class (Aria Suite) to Asia is excellent. Asia Miles and Alaska Mileage Plan both have partner access at solid rates.', bookWith:['Cathay Pacific Asia Miles','Alaska Mileage Plan','American AAdvantage','British Airways Avios'] },
+      { id:'jal',       code:'JL', name:'Japan Airlines',      program:'JAL Mileage Bank', key:true,  tip:'JAL business class (Sky Suite) is world-class. American AAdvantage is the main path for US bank point holders — fixed rates and good availability.', bookWith:['American AAdvantage','British Airways Avios','Alaska Mileage Plan'] },
+      { id:'qantas',    code:'QF', name:'Qantas',              program:'Frequent Flyer',   key:true,  tip:'Qantas First Class on the A380 is iconic. American AAdvantage is the most accessible US path to book it with bank points.', bookWith:['American AAdvantage','British Airways Avios','Cathay Pacific Asia Miles','Alaska Mileage Plan'] },
+      { id:'iberia',    code:'IB', name:'Iberia',              program:'Iberia Plus',      key:true,  tip:'Iberia Plus has lower redemption rates than British Airways Avios for Iberia-operated flights to Madrid. Chase, Amex, Bilt, and Wells Fargo all transfer directly to Iberia Plus.', bookWith:['British Airways Avios','American AAdvantage','Iberia Plus'] },
+      { id:'finnair',   code:'AY', name:'Finnair',             program:'Finnair Plus',     key:true,  tip:'Finnair business class is a solid way to reach Northern Europe and Asia via Helsinki. American AAdvantage is the easiest US path.', bookWith:['American AAdvantage','British Airways Avios','Alaska Mileage Plan'] },
+      { id:'alaska',    code:'AS', name:'Alaska Airlines',     program:'Mileage Plan',     key:true,  tip:'Alaska Mileage Plan has one of the best remaining fixed partner award charts. Book Cathay, JAL, British Airways, and Qantas at great rates. Only Bilt transfers directly to Alaska, making it the only bank path here.', bookWith:['Alaska Mileage Plan','American AAdvantage','British Airways Avios'] },
+      { id:'malaysia',  code:'MH', name:'Malaysia Airlines',   program:'Enrich',           key:true,  tip:'Malaysia business class (Business Suite) to Southeast Asia is a hidden gem. Book via British Airways Avios or American AAdvantage as Oneworld partners.', bookWith:['British Airways Avios','American AAdvantage'] },
+      { id:'royaljord', code:'RJ', name:'Royal Jordanian',     program:'Royal Club',       key:false },
+      { id:'srilankan', code:'UL', name:'SriLankan Airlines',  program:'FlySmiLes',        key:false },
+      { id:'royalair',  code:'AT', name:'Royal Air Maroc',     program:'Safar Flyer',      key:false },
+      { id:'fiji',      code:'FJ', name:'Fiji Airways',        program:'Fiji Airways',     key:false },
+    ]
+  },
+  skyteam: {
+    name: 'SkyTeam', cls: 'st',
+    airlines: [
+      { id:'delta',      code:'DL', name:'Delta Air Lines',    program:'SkyMiles',         key:true,  tip:'Delta SkyMiles use dynamic pricing — unpredictable and often very expensive. Virgin Atlantic Flying Club is the gold standard workaround: book Delta transatlantic business class for a fixed 50,000 miles vs 300,000+ SkyMiles. Huge difference.', bookWith:['Virgin Atlantic Flying Club','Air France/KLM Flying Blue','Korean Air SKYPASS'] },
+      { id:'airfrance',  code:'AF', name:'Air France',         program:'Flying Blue',      key:true,  tip:'Flying Blue runs monthly Promo Rewards with 25–50% off specific routes. Some of the best transatlantic business class deals available. Most major US banks transfer directly to Flying Blue.', bookWith:['Air France/KLM Flying Blue','Delta SkyMiles'] },
+      { id:'klm',        code:'KL', name:'KLM',                program:'Flying Blue',      key:true,  tip:'Same program as Air France. Flying Blue Promo Rewards cover both airlines. Amsterdam is a great connection hub for Europe, Africa, and Asia.', bookWith:['Air France/KLM Flying Blue','Delta SkyMiles'] },
+      { id:'korean',     code:'KE', name:'Korean Air',         program:'SKYPASS',          key:true,  tip:'Korean Air Prestige (business class) is excellent. SKYPASS uses a zone-based chart with fair rates to Asia. Flying Blue can also book Korean Air as a SkyTeam partner.', bookWith:['Korean Air SKYPASS','Air France/KLM Flying Blue','Delta SkyMiles'] },
+      { id:'aeromexico', code:'AM', name:'Aeromexico',         program:'Club Premier',     key:true,  tip:'Best option for flights to Mexico and Latin America. Delta SkyMiles and Flying Blue can both book Aeromexico as SkyTeam partners.', bookWith:['Delta SkyMiles','Air France/KLM Flying Blue'] },
+      { id:'virgin',     code:'VS', name:'Virgin Atlantic',    program:'Flying Club',      key:true,  tip:'Virgin Atlantic joined SkyTeam in 2023. Flying Club has some of the best partner redemption rates available — especially for Delta and ANA flights that cost a fortune otherwise.', bookWith:['Virgin Atlantic Flying Club','Air France/KLM Flying Blue'] },
+      { id:'westjet',    code:'WS', name:'WestJet',            program:'WestJet Rewards',  key:true,  tip:'Good for Canada routes. Flying Blue can book WestJet as a SkyTeam partner. WestJet and Delta also have a codeshare partnership.', bookWith:['Air France/KLM Flying Blue','Delta SkyMiles'] },
+      { id:'ita',        code:'AZ', name:'ITA Airways',        program:'Volare',           key:true,  tip:'Italy\'s carrier (successor to Alitalia). Delta SkyMiles and Flying Blue can book ITA as a SkyTeam partner — good for Rome and Milan nonstops.', bookWith:['Air France/KLM Flying Blue','Delta SkyMiles'] },
+      { id:'chinaeast',  code:'MU', name:'China Eastern',      program:'Eastern Miles',    key:false },
+      { id:'garuda',     code:'GA', name:'Garuda Indonesia',   program:'GarudaMiles',      key:false },
+      { id:'kenya',      code:'KQ', name:'Kenya Airways',      program:'Flying Blue',      key:false },
+      { id:'mea',        code:'ME', name:'Middle East Airlines',program:'Cedar Miles',     key:false },
+      { id:'saudia',     code:'SV', name:'Saudia',             program:'Alfursan',         key:false },
+      { id:'tarom',      code:'RO', name:'TAROM',              program:'Frequent Flyer',   key:false },
+      { id:'vietnam',    code:'VN', name:'Vietnam Airlines',   program:'Lotusmiles',       key:false },
+      { id:'xiamenair',  code:'MF', name:'XiamenAir',          program:'PhoenixMiles',     key:false },
+      { id:'aireuropa',  code:'UX', name:'Air Europa',         program:'SUMA',             key:false },
+      { id:'czech',      code:'OK', name:'Czech Airlines',     program:'OK Plus',          key:false },
+      { id:'airpremia',  code:'YP', name:'Air Premia',         program:'Air Premia',       key:false },
+    ]
+  }
+};
+
+// Airline lookup across all alliances
+const AIRLINE_LOOKUP = {};
+Object.values(ALLIANCES).forEach(al => {
+  al.airlines.forEach(a => { AIRLINE_LOOKUP[a.id] = { ...a, allianceCls: al.cls, allianceName: al.name }; });
+});
+
+// ─── BANK AIRLINE PROGRAMS ─────────────────────────────────────────────────
+
+const AIR_BANKS = [
+  { id:'csr',  name:'Chase Sapphire Reserve',  color:'#1e3a8a' },
+  { id:'csp',  name:'Chase Sapphire Preferred', color:'#2563eb' },
+  { id:'amex', name:'Amex Membership Rewards', color:'#0f766e' },
+  { id:'citi', name:'Citi ThankYou Points',    color:'#0369a1' },
+  { id:'cap1', name:'Capital One Miles',       color:'#7c3aed' },
+  { id:'bilt', name:'Bilt Rewards',            color:'#b45309' },
+  { id:'wells',name:'Wells Fargo Autograph',   color:'#be123c' },
+];
+
+// Programs: banks[], alliance, flies[] (airline IDs)
+const AIR_PROGRAMS = {
+  'United MileagePlus':             { banks:['csr','csp','bilt'],                              al:'star',     flies:['united','aircanada','lufthansa','ana','singapore','turkish','avianca','swiss','tap','ethiopian','eva','asiana','airchina','airindia','airnz','copa','austrian','brussels','thai','lot'] },
+  'Air Canada Aeroplan':            { banks:['csr','csp','amex','cap1','bilt'],                al:'star',     flies:['united','aircanada','lufthansa','ana','singapore','turkish','avianca','swiss','tap','ethiopian','eva','asiana','copa','austrian','brussels','thai','lot'] },
+  'ANA Mileage Club':               { banks:['amex'],                                          al:'star',     flies:['united','aircanada','lufthansa','ana','singapore','swiss','austrian','brussels'] },
+  'Avianca LifeMiles':              { banks:['amex','citi','cap1','bilt','wells'],              al:'star',     flies:['united','aircanada','lufthansa','ana','avianca','swiss','tap','ethiopian','copa'] },
+  'Singapore KrisFlyer':            { banks:['csr','csp','amex','citi','cap1'],                al:'star',     flies:['united','aircanada','lufthansa','ana','singapore','turkish','swiss','eva','asiana'] },
+  'Turkish Miles & Smiles':         { banks:['citi','cap1','bilt'],                            al:'star',     flies:['united','aircanada','lufthansa','ana','turkish','avianca','swiss'] },
+  'Lufthansa Miles & More':         { banks:['amex'],                                          al:'star',     flies:['lufthansa','swiss','tap','aircanada','austrian','brussels'] },
+  'Air France/KLM Flying Blue':     { banks:['csr','csp','amex','citi','cap1','bilt','wells'], al:'skyteam',  flies:['delta','airfrance','klm','korean','aeromexico','virgin','westjet','ita','chinaeast','garuda','kenya','vietnam'] },
+  'Virgin Atlantic Flying Club':    { banks:['csr','csp','amex','citi','cap1','bilt','wells'], al:'skyteam',  flies:['delta','airfrance','klm','virgin','ana'] },
+  'Delta SkyMiles':                 { banks:['amex'],                                          al:'skyteam',  flies:['delta','airfrance','klm','korean','aeromexico','westjet','ita','chinaeast','garuda','kenya'] },
+  'AeroMexico Club Premier':        { banks:['amex','cap1','citi'],                            al:'skyteam',  flies:['aeromexico','delta','airfrance','klm','korean','westjet'] },
+  'British Airways Avios':          { banks:['csr','csp','amex','cap1','bilt','wells'],        al:'oneworld', flies:['american','british','cathay','jal','qantas','iberia','finnair','alaska','malaysia','royaljord','fiji'] },
+  'Iberia Plus':                    { banks:['csr','csp','amex','bilt','wells'],               al:'oneworld', flies:['american','british','cathay','jal','qantas','iberia','finnair','alaska'] },
+  'Aer Lingus AerClub':             { banks:['csr','csp','amex','bilt','wells'],               al:'oneworld', flies:['american','british','cathay','jal','qantas','iberia','finnair','alaska'] },
+  'American AAdvantage':            { banks:['citi'],                                          al:'oneworld', flies:['american','british','cathay','jal','qantas','iberia','finnair','alaska','malaysia','royaljord'] },
+  'Cathay Pacific Asia Miles':      { banks:['amex','citi','cap1','bilt','wells'],             al:'oneworld', flies:['american','british','cathay','jal','qantas','finnair','alaska','malaysia'] },
+  'Alaska Mileage Plan':            { banks:['bilt'],                                          al:'oneworld', flies:['american','british','cathay','jal','qantas','iberia','finnair','alaska','malaysia'] },
+  'JAL Mileage Bank':               { banks:['cap1','bilt'],                                  al:'oneworld', flies:['american','british','cathay','jal','qantas','iberia','finnair','alaska','malaysia'] },
+  'Emirates Skywards':              { banks:['amex','citi','cap1','bilt'],                     al:'none',     flies:['emirates'] },
+  'Etihad Guest':                   { banks:['cap1','citi','bilt'],                            al:'none',     flies:['etihad'] },
+  'Qatar Airways Privilege Club':   { banks:['cap1','citi','bilt'],                            al:'none',     flies:['qatar_air'] },
+  'EVA Air Infinity MileageLands':  { banks:['cap1'],                                          al:'star',     flies:['eva','united','aircanada','singapore'] },
+  'Finnair Plus':                   { banks:['cap1'],                                          al:'oneworld', flies:['american','british','cathay','jal','qantas','finnair','alaska'] },
+  'TAP Miles & Go':                 { banks:['cap1'],                                          al:'star',     flies:['tap','lufthansa','aircanada','united'] },
+  'JetBlue TrueBlue':               { banks:['csr','csp','amex','citi','cap1','wells'],        al:'none',     flies:['jetblue'] },
+  'Southwest Rapid Rewards':        { banks:['csr','csp','bilt'],                              al:'none',     flies:['southwest'] },
+};
+
+// Non-alliance airline stubs for lookup
+['emirates','etihad','jetblue','southwest','qatar_air'].forEach(id => {
+  const names = { emirates:'Emirates', etihad:'Etihad Airways', jetblue:'JetBlue', southwest:'Southwest Airlines', qatar_air:'Qatar Airways' };
+  const codes = { emirates:'EK', etihad:'EY', jetblue:'B6', southwest:'WN', qatar_air:'QR' };
+  const tips  = {
+    emirates:  'Emirates Skywards is the only way to book Emirates flights with transferable bank points. Amex and Bilt both transfer to Skywards. Emirates first class is one of the world\'s best — a private suite with a shower on the A380.',
+    etihad:    'Etihad Guest is accessible via Capital One miles. Etihad\'s The Residence (three-room suite) and business class are excellent for Gulf routes and connections to Asia.',
+    jetblue:   'JetBlue TrueBlue doesn\'t have a traditional award chart — it\'s based on cash price. Best for domestic US routes and Caribbean. Transfer Chase, Citi, or Amex to TrueBlue.',
+    southwest: 'Southwest Rapid Rewards points are worth about 1.4 cents each with no blackout dates. Transfer Chase or Bilt to Southwest for specific redemptions.',
+    qatar_air: 'Qatar Privilege Club is one of the best premium cabin programs available. No path from Chase or Amex. Only Capital One, Citi, and Bilt transfer directly. Qsuite business class is widely considered the best in the world.'
+  };
+  AIRLINE_LOOKUP[id] = { id, code:codes[id], name:names[id], allianceCls:'gray', allianceName:'Independent', key:true, tip:tips[id], bookWith:[] };
+});
+
+// ─── HOTEL DATA ─────────────────────────────────────────────────────────────
+
+const HOTEL_BANKS = AIR_BANKS; // same list
+
+const HOTELS = {
+  hyatt:    { name:'World of Hyatt',    cls:'hotel-purple', banks:{ csr:'1:1', csp:'4:3', bilt:'1:1' }, tip:'Hyatt points are the most valuable hotel currency, roughly 1.5 to 2.5 cents each. Park Hyatt properties can run 25,000 to 40,000 points per night vs $600 to $1,000 cash. CSR transfers 1:1, CSP transfers at 4:3, so factor that in when you calculate. Bilt also transfers 1:1.' },
+  marriott: { name:'Marriott Bonvoy',   cls:'hotel-amber',  banks:{ csr:'1:1', csp:'1:1', amex:'1:1', bilt:'1:1' }, tip:'Marriott points are lower value, around 0.7 to 1 cent each. Best redemptions are at top-tier properties like Ritz-Carlton, St. Regis, and W Hotels. Marriott also has an airline transfer option: every 60k Marriott points = 25k miles plus 5k bonus miles with most airlines.' },
+  ihg:      { name:'IHG One Rewards',   cls:'hotel-red',    banks:{ csr:'1:1', csp:'1:1', bilt:'1:1' }, tip:'IHG points run about 0.5 cents each. The sweet spot is the "fourth night free" benefit on award stays, which effectively cuts the cost 25%. Best for InterContinental and Kimpton properties. Chase and Bilt both transfer here.' },
+  hilton:   { name:'Hilton Honors',     cls:'hotel-teal',   banks:{ amex:'1:2', bilt:'1:2' }, tip:'Hilton points are worth about 0.4 to 0.6 cents each. The 1:2 ratio sounds good but the low point value offsets it. Best for Waldorf Astoria or Conrad properties. Only Amex and Bilt transfer directly to Hilton.' },
+  wyndham:  { name:'Wyndham Rewards',   cls:'hotel-violet', banks:{ csr:'1:1', csp:'1:1', cap1:'1:1', bilt:'1:1', wells:'1:2' }, tip:'Wyndham has 9,000+ properties ranging from budget to vacation clubs. Points are worth about 1 cent each at the right properties. Chase, Capital One, and Bilt transfer at 1:1. Wells Fargo transfers at 1:2.' },
+  choice:   { name:'Choice Privileges', cls:'hotel-teal',   banks:{ amex:'1:2', cap1:'1:2', citi:'1:2', wells:'1:2' }, tip:'Choice Privileges covers 7,000+ properties including Radisson Americas and Comfort Inn. You get 2 Choice points per bank point transferred. Best value at Category 1 to 3 properties where award nights run 6,000 to 10,000 points. Amex, Capital One, Citi, and Wells Fargo all transfer here.' },
+};
+
+// ─── ALLIANCE TAB LOGIC ─────────────────────────────────────────────────────
+
+let curAlliance = null;
+
+function selectAlliance(key) {
+  curAlliance = key;
+  document.getElementById('airline-detail').style.display = 'none';
+  document.getElementById('airline-detail').className = 'detail-panel';
+
+  ['star','oneworld','skyteam'].forEach(k => {
+    const btn = document.getElementById('btn-' + k);
+    const c = {star:'star',oneworld:'ow',skyteam:'st'}[k];
+    btn.className = 'alliance-card ' + c + '-bg' + (k === key ? ' ' + c + '-bd' : '');
+  });
+
+  const al = ALLIANCES[key];
+  document.getElementById('alliance-label').textContent = al.name + ' members — tap any airline for booking tips';
+
+  const area = document.getElementById('airline-chips');
+  area.innerHTML = '';
+
+  // Key airlines first, then the rest
+  const keyAirlines = al.airlines.filter(a => a.key);
+  const otherAirlines = al.airlines.filter(a => !a.key);
+
+  if (keyAirlines.length) {
+    const lbl = document.createElement('div');
+    lbl.style.cssText = 'width:100%;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#9ca3af;margin-bottom:4px;margin-top:4px;';
+    lbl.textContent = 'Major partners';
+    area.appendChild(lbl);
+    keyAirlines.forEach(a => area.appendChild(makeChip(a, al.cls)));
+  }
+  if (otherAirlines.length) {
+    const lbl = document.createElement('div');
+    lbl.style.cssText = 'width:100%;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#9ca3af;margin-top:10px;margin-bottom:4px;';
+    lbl.textContent = 'All members';
+    area.appendChild(lbl);
+    otherAirlines.forEach(a => area.appendChild(makeChip(a, al.cls, true)));
+  }
+}
+
+function makeChip(a, cls, dim) {
+  const chip = document.createElement('button');
+  chip.className = 'chip ' + cls + '-chip' + (dim ? ' dim' : '');
+  chip.textContent = a.code + ' — ' + a.name;
+  chip.onclick = () => showAirlineDetail(a, cls);
+  return chip;
+}
+
+function showAirlineDetail(a, cls) {
+  const detail = document.getElementById('airline-detail');
+  const borderCol = cls === 'star' ? '#3b82f6' : cls === 'ow' ? '#f87171' : '#4ade80';
+
+  let inner = `
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;opacity:0.55;margin-bottom:6px;">${ALLIANCES[curAlliance].name} member</div>
+    <div class="detail-airline ${cls}-tx">${a.name} <span style="font-weight:400;font-size:13px;opacity:0.6;">(${a.code})</span></div>
+    <div class="detail-sub">Own program: ${a.program}</div>`;
+
+  if (a.key && a.bookWith && a.bookWith.length) {
+    const chips = a.bookWith.map(b => `<span class="book-chip ${cls}-chip">${b}</span>`).join('');
+    inner += `<div class="mini-label">Best programs to book this airline</div><div class="book-chips">${chips}</div>`;
+  }
+
+  if (a.key && a.tip) {
+    inner += `<div class="mini-label">Pro tip</div><div class="pro-tip ${cls}-bg" style="border-left:3px solid ${borderCol}"><strong>Tip:</strong> ${a.tip}</div>`;
+  } else {
+    inner += `<p class="no-tip">This airline is a member but detailed booking tips aren't available yet. Use any Star/Oneworld/SkyTeam program above to check partner award availability.</p>`;
+  }
+
+  detail.innerHTML = inner;
+  detail.className = 'detail-panel ' + cls + '-bg visible';
+  detail.style.display = 'block';
+  detail.style.borderLeftColor = borderCol;
+  detail.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+// ─── BANK AIRLINE TAB LOGIC ─────────────────────────────────────────────────
+
+function initAirBankPills() {
+  const c = document.getElementById('air-bank-pills');
+  AIR_BANKS.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'bank-pill'; btn.id = 'air-bp-' + b.id;
+    btn.style.background = b.color; btn.textContent = b.name;
+    btn.onclick = () => selectAirBank(b.id);
+    c.appendChild(btn);
+  });
+}
+
+function selectAirBank(bankId) {
+  document.querySelectorAll('#air-bank-pills .bank-pill').forEach(p => p.classList.remove('active'));
+  document.getElementById('air-bp-' + bankId).classList.add('active');
+
+  const grid = document.getElementById('air-program-grid');
+  grid.innerHTML = '';
+
+  const matched = Object.entries(AIR_PROGRAMS).filter(([,p]) => p.banks.includes(bankId));
+  if (!matched.length) { grid.innerHTML = '<p style="color:#9ca3af;font-size:13px;">No airline partners for this bank.</p>'; return; }
+
+  const groups = { star:[], oneworld:[], skyteam:[], none:[] };
+  matched.forEach(([name,p]) => groups[p.al].push([name,p]));
+
+  const order = [['star','Star Alliance','star'],['oneworld','Oneworld','ow'],['skyteam','SkyTeam','st'],['none','Independent','gray']];
+  order.forEach(([key,label,cls]) => {
+    if (!groups[key].length) return;
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'grid-column:1/-1;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;padding:6px 0 2px;';
+    hdr.textContent = label; grid.appendChild(hdr);
+    groups[key].forEach(([name,p]) => {
+      const card = document.createElement('button');
+      card.className = 'program-card ' + cls + '-bg';
+      card.id = 'air-prog-' + name.replace(/\W+/g,'-');
+      card.innerHTML = `<div class="prog-name ${cls}-tx">${name}</div><span class="prog-badge ${cls}-badge">${label}</span>`;
+      card.onclick = () => selectAirProgram(name);
+      grid.appendChild(card);
+    });
+  });
+
+  document.getElementById('air-result-grid').innerHTML = '<p style="color:#9ca3af;font-size:13px;">Select a program above.</p>';
+  document.getElementById('air-tip').classList.remove('visible');
+}
+
+function selectAirProgram(name) {
+  document.querySelectorAll('.program-card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById('air-prog-' + name.replace(/\W+/g,'-'));
+  if (card) card.classList.add('active');
+
+  const p = AIR_PROGRAMS[name];
+  const grid = document.getElementById('air-result-grid');
+  grid.innerHTML = '';
+
+  const cls = p.al === 'star' ? 'star' : p.al === 'oneworld' ? 'ow' : p.al === 'skyteam' ? 'st' : 'gray';
+  const bg  = cls === 'gray' ? '#f3f4f6' : '';
+
+  p.flies.forEach(id => {
+    const a = AIRLINE_LOOKUP[id]; if (!a) return;
+    const card = document.createElement('button');
+    card.className = 'result-card ' + (cls !== 'gray' ? cls + '-bg' : '');
+    if (cls === 'gray') card.style.background = '#f3f4f6';
+    card.id = 'air-res-' + id;
+    card.innerHTML = `<div class="result-code ${cls !== 'gray' ? cls+'-tx' : ''}">${a.code}</div><div class="result-name">${a.name}</div>`;
+    card.onclick = () => showAirTip(id, name);
+    grid.appendChild(card);
+  });
+
+  document.getElementById('air-tip').classList.remove('visible');
+}
+
+function showAirTip(airlineId, programName) {
+  const a = AIRLINE_LOOKUP[airlineId]; if (!a) return;
+  document.querySelectorAll('.result-card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById('air-res-' + airlineId);
+  if (card) card.classList.add('active');
+  const tip = document.getElementById('air-tip');
+  tip.innerHTML = `<div class="tip-title">${programName} → ${a.name}</div>${a.tip || 'Partner award booking available. Check the program\'s website for rates and availability.'}`;
+  tip.classList.add('visible');
+  tip.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+// ─── BANK HOTEL TAB LOGIC ───────────────────────────────────────────────────
+
+function initHotelBankPills() {
+  const c = document.getElementById('hotel-bank-pills');
+  HOTEL_BANKS.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'bank-pill'; btn.id = 'hotel-bp-' + b.id;
+    btn.style.background = b.color; btn.textContent = b.name;
+    btn.onclick = () => selectHotelBank(b.id);
+    c.appendChild(btn);
+  });
+}
+
+function selectHotelBank(bankId) {
+  document.querySelectorAll('#hotel-bank-pills .bank-pill').forEach(p => p.classList.remove('active'));
+  document.getElementById('hotel-bp-' + bankId).classList.add('active');
+
+  const grid = document.getElementById('hotel-result-grid');
+  grid.innerHTML = '';
+  document.getElementById('hotel-tip').classList.remove('visible');
+
+  const matched = Object.entries(HOTELS).filter(([,h]) => h.banks[bankId]);
+  if (!matched.length) {
+    grid.innerHTML = '<p style="color:#9ca3af;font-size:13px;">No hotel transfer partners for this bank.</p>';
+    return;
+  }
+
+  matched.forEach(([key, h]) => {
+    const ratio = h.banks[bankId];
+    const card = document.createElement('button');
+    card.className = 'hotel-card ' + h.cls;
+    card.id = 'hotel-res-' + key;
+    card.innerHTML = `<div class="hotel-name">${h.name}</div><div class="hotel-ratio">Ratio: ${ratio}</div>`;
+    card.onclick = () => showHotelTip(key);
+    grid.appendChild(card);
+  });
+}
+
+function showHotelTip(hotelKey) {
+  const h = HOTELS[hotelKey];
+  document.querySelectorAll('.hotel-card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById('hotel-res-' + hotelKey);
+  if (card) card.classList.add('active');
+  const tip = document.getElementById('hotel-tip');
+  tip.innerHTML = `<div class="tip-title">${h.name}</div>${h.tip}`;
+  tip.classList.add('visible');
+  tip.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+// ─── TABS & INIT ────────────────────────────────────────────────────────────
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function showTool() {
+  document.getElementById('intro-screen').classList.remove('visible');
+  document.getElementById('sim-main').classList.add('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goHome() {
+  document.getElementById('sim-main').classList.remove('visible');
+  document.getElementById('intro-screen').classList.add('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+initAirBankPills();
+initHotelBankPills();
+</script>
+</body>
+</html>
