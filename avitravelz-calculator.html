@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AviTravelz — Award Transfer Calculator</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f4f3fb;
+      color: #1a1a2e;
+      min-height: 100vh;
+      padding: 12px;
+    }
+
+    .container { max-width: 680px; margin: 0 auto; }
+
+    /* Brand header */
+    .brand-bar {
+      background: #3C3489;
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      width: 42px; height: 42px;
+      border-radius: 10px;
+      background: #534AB7;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .brand-icon i { font-size: 22px; color: #fff; }
+    .brand-title { font-size: 20px; font-weight: 600; color: #fff; }
+    .brand-sub { font-size: 12px; color: #AFA9EC; margin-top: 2px; }
+    .brand-pills { margin-left: auto; display: flex; gap: 6px; flex-shrink: 0; }
+    .cat-pill {
+      font-size: 10px; font-weight: 600;
+      padding: 3px 9px; border-radius: 20px;
+      letter-spacing: 0.03em;
+    }
+    .cat-pill.airline { background: #dbeafe; color: #1e3a8a; }
+    .cat-pill.hotel   { background: #d1fae5; color: #065f46; }
+
+    /* Tabs */
+    .tab-row { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+    .tab-row::-webkit-scrollbar { display: none; }
+    .tab {
+      padding: 8px 16px; font-size: 14px; white-space: nowrap;
+      border: 1.5px solid #d1d5db; border-radius: 20px;
+      cursor: pointer; background: #fff; color: #6b7280;
+      flex-shrink: 0;
+    }
+    .tab.active { background: #3C3489; color: #fff; border-color: #3C3489; }
+
+    /* Section cards */
+    .section-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: 10px; font-weight: 700;
+      color: #9ca3af; text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 12px;
+    }
+
+    /* Form fields */
+    .field-row { display: grid; gap: 10px; margin-bottom: 10px; }
+    .field-row.two { grid-template-columns: 1fr 1fr; }
+    .field-row.three { grid-template-columns: 1fr 1fr 1fr; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label { font-size: 12px; color: #6b7280; font-weight: 500; }
+    .field input, .field select {
+      font-size: 15px; padding: 10px 12px;
+      border: 1.5px solid #e5e7eb; border-radius: 10px;
+      background: #f9fafb; color: #111827;
+      width: 100%; appearance: none; -webkit-appearance: none;
+    }
+    .field input:focus, .field select:focus {
+      outline: none; border-color: #534AB7; background: #fff;
+    }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236b7280'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-size: 18px; padding-right: 36px; }
+
+    .divider { height: 1px; background: #f3f4f6; margin: 14px 0; }
+    .partner-note { font-size: 11px; color: #9ca3af; margin-top: 3px; }
+
+    /* N/A warning */
+    .na-box {
+      background: #fef3c7; border: 1px solid #fcd34d;
+      border-radius: 10px; padding: 10px 14px;
+      font-size: 13px; color: #78350f;
+      display: none; margin-top: 6px;
+    }
+
+    /* Result cards */
+    .result-grid { display: grid; gap: 8px; margin-top: 12px; }
+    .result-grid.three { grid-template-columns: repeat(3, 1fr); }
+    .result-grid.two { grid-template-columns: repeat(2, 1fr); }
+    .rcard { border-radius: 12px; padding: 12px; text-align: center; }
+    .rcard.purple { background: #ede9fe; }
+    .rcard.teal   { background: #d1fae5; }
+    .rcard.blue   { background: #dbeafe; }
+    .rcard.amber  { background: #fef3c7; }
+    .rcard.coral  { background: #fee2e2; }
+    .rcard.gray   { background: #f3f4f6; }
+    .rcard .rl { font-size: 10px; color: #6b7280; margin-bottom: 4px; font-weight: 500; }
+    .rcard .rv { font-size: 20px; font-weight: 700; }
+    .rcard.purple .rv { color: #4c1d95; }
+    .rcard.teal   .rv { color: #065f46; }
+    .rcard.blue   .rv { color: #1e3a8a; }
+    .rcard.amber  .rv { color: #78350f; }
+    .rcard.coral  .rv { color: #7f1d1d; }
+    .rcard.gray   .rv { color: #111827; }
+    .rcard .rs { font-size: 10px; color: #9ca3af; margin-top: 2px; }
+
+    /* Verdict */
+    .verdict {
+      margin-top: 12px; padding: 12px 14px;
+      border-radius: 10px; font-size: 13px; line-height: 1.5;
+      border-left: 3px solid;
+    }
+    .verdict.good    { background: #d1fae5; color: #064e3b; border-color: #10b981; }
+    .verdict.bad     { background: #fee2e2; color: #7f1d1d; border-color: #ef4444; }
+    .verdict.warn    { background: #fef3c7; color: #78350f; border-color: #f59e0b; }
+    .verdict.neutral { background: #f3f4f6; color: #6b7280; border-color: #d1d5db; }
+
+    /* CPP bar */
+    .cpp-wrap { margin-top: 12px; }
+    .cpp-meta { display: flex; justify-content: space-between; font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+    .cpp-bg { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+    .cpp-fill { height: 100%; border-radius: 4px; transition: width 0.3s, background 0.3s; }
+    .cpp-labels { display: flex; justify-content: space-between; font-size: 10px; color: #9ca3af; margin-top: 3px; }
+
+    /* Panel */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Mobile responsive */
+    @media (max-width: 480px) {
+      body { padding: 8px; }
+      .brand-title { font-size: 17px; }
+      .brand-pills { display: none; }
+      .field-row.two { grid-template-columns: 1fr; }
+      .field-row.three { grid-template-columns: 1fr 1fr; }
+      .result-grid.three { grid-template-columns: 1fr 1fr; }
+      .rcard .rv { font-size: 17px; }
+      .tab { font-size: 13px; padding: 7px 13px; }
+    }
+
+    @media (max-width: 360px) {
+      .field-row.three { grid-template-columns: 1fr; }
+      .result-grid.three { grid-template-columns: 1fr; }
+      .result-grid.two { grid-template-columns: 1fr; }
+    }
+    .intro-screen { display: none; }
+    .intro-screen.visible { display: block; }
+    .sim-main { display: none; }
+    .sim-main.visible { display: block; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- INTRO SCREEN -->
+  <div id="intro-screen" class="intro-screen visible">
+    <div style="background:#0c4a6e;border-radius:14px;padding:18px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px;">
+      <div style="width:44px;height:44px;border-radius:10px;background:#0e6090;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="ti ti-calculator" style="font-size:24px;color:#fff;"></i>
+      </div>
+      <div>
+        <div style="font-size:20px;font-weight:800;color:#fff;">Avi<span style="color:#38bdf8;">Travelz</span></div>
+        <div style="font-size:12px;color:#7dd3fc;margin-top:1px;">Award Transfer Calculator</div>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;margin-bottom:16px;">
+      <div style="font-size:22px;font-weight:800;color:#0f172a;margin-bottom:8px;">Know if the transfer is worth it before you do it.</div>
+      <div style="font-size:14px;color:#475569;line-height:1.6;margin-bottom:20px;">Three calculators in one. Figure out how a transfer bonus affects your miles, whether cash or points is the better deal for a specific flight, and whether you have enough miles to book after the transfer.</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
+        <div style="background:#eff6ff;border-radius:12px;padding:14px 10px;text-align:center;">
+          <div style="font-size:22px;margin-bottom:4px;">&#127381;</div>
+          <div style="font-size:11px;font-weight:700;color:#1e3a8a;line-height:1.3;">Transfer Bonus</div>
+          <div style="font-size:10px;color:#3b82f6;margin-top:3px;">See miles after bonus</div>
+        </div>
+        <div style="background:#f0fdf4;border-radius:12px;padding:14px 10px;text-align:center;">
+          <div style="font-size:22px;margin-bottom:4px;">&#128176;</div>
+          <div style="font-size:11px;font-weight:700;color:#065f46;line-height:1.3;">Cash vs Points</div>
+          <div style="font-size:10px;color:#10b981;margin-top:3px;">Find your cents per point</div>
+        </div>
+        <div style="background:#fef3c7;border-radius:12px;padding:14px 10px;text-align:center;">
+          <div style="font-size:22px;margin-bottom:4px;">&#9989;</div>
+          <div style="font-size:11px;font-weight:700;color:#78350f;line-height:1.3;">Full Comparison</div>
+          <div style="font-size:10px;color:#f59e0b;margin-top:3px;">Can you book the flight?</div>
+        </div>
+      </div>
+
+      <div style="background:#eff6ff;border:1px solid #c7d2fe;border-radius:12px;padding:14px;font-size:13px;color:#3730a3;line-height:1.6;margin-bottom:20px;">
+        <strong>Good rule of thumb:</strong> Anything above 1.5 cents per point is a solid redemption. Above 2 cents is great. Below 1 cent means you are probably better off paying cash and saving your miles for a premium cabin flight.
+      </div>
+
+      <button onclick="showTool()" style="width:100%;background:#0c4a6e;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;" onmouseover="this.style.background='#0e6090'" onmouseout="this.style.background='#0c4a6e'">
+        <i class="ti ti-calculator"></i> Open Calculator
+      </button>
+    </div>
+
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;font-size:12px;color:#78350f;text-align:center;">
+      Always verify award availability with the airline before transferring points. Transfers are usually not reversible.
+    </div>
+  </div>
+
+  <!-- MAIN TOOL -->
+  <div id="sim-main" class="sim-main">
+    <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:6px;background:white;border:1.5px solid #e2e8f0;border-radius:8px;color:#475569;font-size:12px;font-weight:600;cursor:pointer;padding:7px 12px;margin-bottom:16px;transition:all .15s;" onmouseover="this.style.borderColor='#94a3b8'" onmouseout="this.style.borderColor='#e2e8f0'"><i class="ti ti-arrow-left" style="font-size:14px;"></i> Back to intro</button>
+
+  <!-- Header -->
+  <div class="brand-bar">
+    <div class="brand-icon">
+      <i class="ti ti-plane-departure" aria-hidden="true"></i>
+    </div>
+    <div>
+      <div class="brand-title">AviTravelz</div>
+      <div class="brand-sub">Award Transfer &amp; Value Calculator</div>
+    </div>
+    <div class="brand-pills">
+      <span class="cat-pill airline">Airlines</span>
+      <span class="cat-pill hotel">Hotels</span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-row">
+    <button class="tab active" onclick="switchTab('transfer', this)">Transfer bonus</button>
+    <button class="tab" onclick="switchTab('cashvpts', this)">Cash vs points</button>
+    <button class="tab" onclick="switchTab('combo', this)">Full comparison</button>
+  </div>
+
+  <!-- TAB 1: Transfer Bonus -->
+  <div id="panel-transfer" class="panel active">
+    <div class="section-card">
+      <p class="section-title">Your bank program</p>
+      <div class="field-row two">
+        <div class="field">
+          <label>Card / program</label>
+          <select id="t-bank" onchange="onBankChange('t')">
+            <optgroup label="Chase">
+              <option value="csr">Chase Sapphire Reserve</option>
+              <option value="csp">Chase Sapphire Preferred</option>
+            </optgroup>
+            <optgroup label="Amex">
+              <option value="amex">Amex Membership Rewards</option>
+            </optgroup>
+            <optgroup label="Citi">
+              <option value="citi">Citi ThankYou Points</option>
+            </optgroup>
+            <optgroup label="Capital One">
+              <option value="cap1">Capital One Miles</option>
+            </optgroup>
+            <optgroup label="Other">
+              <option value="bilt">Bilt Rewards</option>
+              <option value="wells">Wells Fargo Autograph</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="field">
+          <label>Points you have</label>
+          <input type="number" id="t-points" value="75000" inputmode="numeric" oninput="calcTransfer()">
+        </div>
+      </div>
+      <div class="field-row two">
+        <div class="field">
+          <label>Transfer partner</label>
+          <select id="t-partner" onchange="onPartnerChange('t')"></select>
+          <div class="partner-note" id="t-partner-note"></div>
+        </div>
+        <div class="field">
+          <label>Transfer ratio (auto-filled)</label>
+          <input type="text" id="t-ratio" value="1:1" oninput="calcTransfer()">
+        </div>
+      </div>
+      <div id="t-na-box" class="na-box">
+        <i class="ti ti-alert-triangle" style="font-size:14px;vertical-align:-2px;" aria-hidden="true"></i>
+        <span id="t-na-msg"></span>
+      </div>
+      <div class="divider"></div>
+      <div class="field-row two">
+        <div class="field">
+          <label>Transfer bonus %</label>
+          <input type="number" id="t-bonus" value="30" min="0" max="200" inputmode="numeric" oninput="calcTransfer()">
+        </div>
+        <div class="field">
+          <label>Transfer fee ($)</label>
+          <input type="number" id="t-fee" value="0" min="0" inputmode="decimal" oninput="calcTransfer()">
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <p class="section-title">Result</p>
+      <div class="result-grid three">
+        <div class="rcard blue">
+          <div class="rl">Base miles</div>
+          <div class="rv" id="r-base">75,000</div>
+          <div class="rs">without bonus</div>
+        </div>
+        <div class="rcard purple">
+          <div class="rl">Bonus miles</div>
+          <div class="rv" id="r-bonus-miles">+22,500</div>
+          <div class="rs">free miles</div>
+        </div>
+        <div class="rcard teal">
+          <div class="rl">Total miles</div>
+          <div class="rv" id="r-total">97,500</div>
+          <div class="rs">after transfer</div>
+        </div>
+      </div>
+      <div id="t-verdict" class="verdict neutral">Loading...</div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Cash vs Points -->
+  <div id="panel-cashvpts" class="panel">
+    <div class="section-card">
+      <p class="section-title">Flight or hotel details</p>
+      <div class="field-row two">
+        <div class="field">
+          <label>Cash price ($)</label>
+          <input type="number" id="cv-cash" value="1200" inputmode="decimal" oninput="calcCashVsPts()">
+        </div>
+        <div class="field">
+          <label>Points / miles required</label>
+          <input type="number" id="cv-miles" value="70000" inputmode="numeric" oninput="calcCashVsPts()">
+        </div>
+      </div>
+      <div class="field-row two">
+        <div class="field">
+          <label>Taxes / fees on award ($)</label>
+          <input type="number" id="cv-fees" value="55" inputmode="decimal" oninput="calcCashVsPts()">
+        </div>
+        <div class="field">
+          <label>Your benchmark (¢ per point)</label>
+          <select id="cv-bench" onchange="calcCashVsPts()">
+            <option value="1.0">1.0¢ — minimum floor</option>
+            <option value="1.5" selected>1.5¢ — typical sweet spot</option>
+            <option value="2.0">2.0¢ — solid redemption</option>
+            <option value="2.5">2.5¢ — great redemption</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="section-card">
+      <p class="section-title">Result</p>
+      <div class="result-grid three">
+        <div class="rcard purple">
+          <div class="rl">Cents per point</div>
+          <div class="rv" id="cv-cpp">—</div>
+          <div class="rs">your value</div>
+        </div>
+        <div class="rcard teal">
+          <div class="rl">You pay w/ points</div>
+          <div class="rv" id="cv-effcost">—</div>
+          <div class="rs">fees only</div>
+        </div>
+        <div class="rcard amber">
+          <div class="rl">You save</div>
+          <div class="rv" id="cv-save">—</div>
+          <div class="rs">vs cash</div>
+        </div>
+      </div>
+      <div class="cpp-wrap">
+        <div class="cpp-meta">
+          <span>Your value: <strong id="cv-cpp-lbl">—</strong></span>
+          <span>Benchmark: <strong id="cv-bench-lbl">1.5¢</strong></span>
+        </div>
+        <div class="cpp-bg"><div class="cpp-fill" id="cv-bar" style="width:0%;background:#10b981;"></div></div>
+        <div class="cpp-labels"><span>0¢</span><span>1¢</span><span>2¢</span><span>3¢+</span></div>
+      </div>
+      <div id="cv-verdict" class="verdict neutral">Enter your details above.</div>
+    </div>
+  </div>
+
+  <!-- TAB 3: Full Comparison -->
+  <div id="panel-combo" class="panel">
+    <div class="section-card">
+      <p class="section-title">Bank points + transfer</p>
+      <div class="field-row three">
+        <div class="field">
+          <label>Card / program</label>
+          <select id="co-bank" onchange="onBankChange('co')">
+            <optgroup label="Chase">
+              <option value="csr">Chase Sapphire Reserve</option>
+              <option value="csp">Chase Sapphire Preferred</option>
+            </optgroup>
+            <optgroup label="Amex">
+              <option value="amex">Amex Membership Rewards</option>
+            </optgroup>
+            <optgroup label="Citi">
+              <option value="citi">Citi ThankYou</option>
+            </optgroup>
+            <optgroup label="Capital One">
+              <option value="cap1">Capital One Miles</option>
+            </optgroup>
+            <optgroup label="Other">
+              <option value="bilt">Bilt Rewards</option>
+              <option value="wells">Wells Fargo Autograph</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="field">
+          <label>Points you have</label>
+          <input type="number" id="co-points" value="75000" inputmode="numeric" oninput="calcCombo()">
+        </div>
+        <div class="field">
+          <label>Transfer bonus %</label>
+          <input type="number" id="co-bonus" value="30" inputmode="numeric" oninput="calcCombo()">
+        </div>
+      </div>
+      <div class="field-row two">
+        <div class="field">
+          <label>Transfer partner</label>
+          <select id="co-partner" onchange="onPartnerChange('co')"></select>
+        </div>
+        <div class="field">
+          <label>Transfer ratio</label>
+          <input type="text" id="co-ratio" value="1:1" oninput="calcCombo()">
+        </div>
+      </div>
+      <div id="co-na-box" class="na-box">
+        <i class="ti ti-alert-triangle" style="font-size:14px;vertical-align:-2px;" aria-hidden="true"></i>
+        <span id="co-na-msg"></span>
+      </div>
+      <div class="divider"></div>
+      <p class="section-title">Award details</p>
+      <div class="field-row three">
+        <div class="field">
+          <label>Cash price ($)</label>
+          <input type="number" id="co-cash" value="2400" inputmode="decimal" oninput="calcCombo()">
+        </div>
+        <div class="field">
+          <label>Miles / pts needed</label>
+          <input type="number" id="co-miles" value="80000" inputmode="numeric" oninput="calcCombo()">
+        </div>
+        <div class="field">
+          <label>Award fees ($)</label>
+          <input type="number" id="co-fees" value="55" inputmode="decimal" oninput="calcCombo()">
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <p class="section-title">Full picture</p>
+      <div class="result-grid three">
+        <div class="rcard blue">
+          <div class="rl">Miles after bonus</div>
+          <div class="rv" id="co-totalmiles">—</div>
+          <div class="rs">total</div>
+        </div>
+        <div class="rcard purple">
+          <div class="rl">Can you book?</div>
+          <div class="rv" id="co-canyou">—</div>
+        </div>
+        <div class="rcard gray">
+          <div class="rl">Leftover / short</div>
+          <div class="rv" id="co-leftover">—</div>
+          <div class="rs">miles</div>
+        </div>
+      </div>
+      <div class="result-grid three" style="margin-top:8px;">
+        <div class="rcard amber">
+          <div class="rl">Cents per point</div>
+          <div class="rv" id="co-cpp">—</div>
+        </div>
+        <div class="rcard coral">
+          <div class="rl">You pay cash</div>
+          <div class="rv" id="co-paycash">—</div>
+          <div class="rs">fees only</div>
+        </div>
+        <div class="rcard teal">
+          <div class="rl">You save</div>
+          <div class="rv" id="co-saved">—</div>
+          <div class="rs">vs paying cash</div>
+        </div>
+      </div>
+      <div id="co-verdict" class="verdict neutral">Loading...</div>
+    </div>
+  </div>
+
+  <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:8px;">AviTravelz · Transfer rates change — always verify before booking.</p>
+
+</div>
+
+<script>
+const partners = {
+  united:     { name:'United MileagePlus',           cat:'airline', r:{ csr:'1:1', csp:'1:1', amex:'1:1', citi:'1:1', cap1:'1:1', bilt:'1:1' } },
+  southwest:  { name:'Southwest Rapid Rewards',      cat:'airline', r:{ csr:'1:1', csp:'1:1', bilt:'1:1' } },
+  delta:      { name:'Delta SkyMiles',               cat:'airline', r:{ amex:'1:1' } },
+  american:   { name:'American AAdvantage',          cat:'airline', r:{ citi:'1:1', bilt:'1:1' } },
+  alaska:     { name:'Alaska Mileage Plan',          cat:'airline', r:{ csr:'1:1', csp:'1:1', bilt:'1:1' } },
+  aeroplan:   { name:'Air Canada Aeroplan',          cat:'airline', r:{ csr:'1:1', csp:'1:1', amex:'1:1', citi:'1:1', cap1:'1:1', bilt:'1:1' } },
+  flyingblue: { name:'Air France/KLM Flying Blue',  cat:'airline', r:{ csr:'1:1', csp:'1:1', amex:'1:1', citi:'1:1', cap1:'1:1', bilt:'1:1', wells:'1:1' } },
+  singapore:  { name:'Singapore KrisFlyer',          cat:'airline', r:{ csr:'1:1', csp:'1:1', amex:'1:1', citi:'1:1', bilt:'1:1' } },
+  british:    { name:'British Airways Avios',        cat:'airline', r:{ csr:'1:1', csp:'1:1', amex:'1:1', citi:'1:1', cap1:'1:1', bilt:'1:1', wells:'1:1' } },
+  ana:        { name:'ANA Mileage Club',             cat:'airline', r:{ csr:'1:1', csp:'1:1', amex:'1:1' } },
+  turkish:    { name:'Turkish Miles & Smiles',       cat:'airline', r:{ citi:'1:1' } },
+  emirates:   { name:'Emirates Skywards',            cat:'airline', r:{ amex:'1:1' } },
+  lufthansa:  { name:'Lufthansa Miles & More',       cat:'airline', r:{ amex:'1:1' } },
+  jetblue:    { name:'JetBlue TrueBlue',             cat:'airline', r:{ csr:'1:1', csp:'1:1', citi:'1:1' } },
+  avianca:    { name:'Avianca LifeMiles',            cat:'airline', r:{ csr:'1:1', csp:'1:1', amex:'1:1', citi:'1:1', cap1:'1:1', bilt:'1:1' } },
+  virgin:     { name:'Virgin Atlantic Flying Club',  cat:'airline', r:{ csr:'1:1', csp:'1:1', amex:'1:1', citi:'1:1', bilt:'1:1' } },
+  cathay:     { name:'Cathay Pacific Asia Miles',    cat:'airline', r:{ csr:'1:1', csp:'1:1', amex:'1:1', citi:'1:1', bilt:'1:1' } },
+  hyatt:      { name:'World of Hyatt',               cat:'hotel',   r:{ csr:'1:1', csp:'4:3', bilt:'1:1' } },
+  marriott:   { name:'Marriott Bonvoy',              cat:'hotel',   r:{ csr:'1:1', csp:'1:1', amex:'1:1', bilt:'1:1' } },
+  ihg:        { name:'IHG One Rewards',              cat:'hotel',   r:{ csr:'1:1', csp:'1:1' } },
+  hilton:     { name:'Hilton Honors',                cat:'hotel',   r:{ amex:'1:2', citi:'1:2', cap1:'1:2', bilt:'1:2' } },
+  wyndham:    { name:'Wyndham Rewards',              cat:'hotel',   r:{ cap1:'1:1', bilt:'1:1' } },
+};
+
+const bankNames = {
+  csr:'Chase Sapphire Reserve', csp:'Chase Sapphire Preferred',
+  amex:'Amex MR', citi:'Citi ThankYou', cap1:'Capital One', bilt:'Bilt', wells:'Wells Fargo'
+};
+
+function buildPartnerSelect(selectId, bank) {
+  const sel = document.getElementById(selectId);
+  const cur = sel.value;
+  sel.innerHTML = '';
+  const cats = { airline: [], hotel: [] };
+  Object.entries(partners).forEach(([k, v]) => cats[v.cat].push([k, v]));
+  [['airline','Airlines'], ['hotel','Hotels']].forEach(([cat, label]) => {
+    const grp = document.createElement('optgroup');
+    grp.label = label;
+    cats[cat].forEach(([k, v]) => {
+      const opt = document.createElement('option');
+      opt.value = k;
+      opt.textContent = v.name + (v.r[bank] ? '' : ' — not a partner');
+      grp.appendChild(opt);
+    });
+    sel.appendChild(grp);
+  });
+  if (cur) sel.value = cur;
+  if (!sel.value) sel.selectedIndex = 0;
+}
+
+function parseRatio(s) {
+  const p = (s || '1:1').split(':');
+  if (p.length !== 2) return 1;
+  const f = parseFloat(p[0]), t = parseFloat(p[1]);
+  return (!f || !t) ? 1 : t / f;
+}
+
+function fmt(n) { return Math.round(n).toLocaleString(); }
+
+function getBankEl(pfx) {
+  return document.getElementById(pfx === 't' ? 't-bank' : 'co-bank');
+}
+
+function onBankChange(pfx) {
+  const bank = getBankEl(pfx).value;
+  buildPartnerSelect(pfx + '-partner', bank);
+  onPartnerChange(pfx);
+}
+
+function onPartnerChange(pfx) {
+  const bank = getBankEl(pfx).value;
+  const key = document.getElementById(pfx + '-partner').value;
+  const p = partners[key];
+  const ratio = p && p.r[bank];
+  const ratioEl = document.getElementById(pfx + '-ratio');
+  const naBox = document.getElementById(pfx + '-na-box');
+  const noteEl = document.getElementById(pfx + '-partner-note');
+
+  if (ratio) {
+    ratioEl.value = ratio;
+    if (naBox) naBox.style.display = 'none';
+    if (noteEl) noteEl.textContent = p.cat === 'hotel' ? 'Hotel loyalty program' : 'Airline miles program';
+  } else {
+    ratioEl.value = 'N/A';
+    if (naBox) {
+      document.getElementById(pfx + '-na-msg').textContent =
+        (bankNames[bank] || bank) + ' does not transfer to ' + (p ? p.name : 'this partner') + '.';
+      naBox.style.display = 'block';
+    }
+    if (noteEl) noteEl.textContent = '';
+  }
+  pfx === 't' ? calcTransfer() : calcCombo();
+}
+
+function calcTransfer() {
+  const bank = document.getElementById('t-bank').value;
+  const key = document.getElementById('t-partner').value;
+  const p = partners[key];
+  const ratio = p && p.r[bank];
+  const pts = parseFloat(document.getElementById('t-points').value) || 0;
+  const mul = ratio ? parseRatio(ratio) : parseRatio(document.getElementById('t-ratio').value);
+  const bonusPct = parseFloat(document.getElementById('t-bonus').value) || 0;
+  const base = pts * mul;
+  const bonusMiles = base * (bonusPct / 100);
+  const total = base + bonusMiles;
+
+  document.getElementById('r-base').textContent = fmt(base);
+  document.getElementById('r-bonus-miles').textContent = '+' + fmt(bonusMiles);
+  document.getElementById('r-total').textContent = fmt(total);
+
+  const v = document.getElementById('t-verdict');
+  if (!ratio) {
+    v.className = 'verdict warn';
+    v.textContent = 'These two don\'t have a direct transfer partnership. Pick a different partner or bank.';
+  } else if (bonusPct === 0) {
+    v.className = 'verdict neutral';
+    v.textContent = 'No bonus active. You get ' + fmt(total) + ' miles — no extra value on top.';
+  } else {
+    const est = Math.round(bonusMiles * 0.015);
+    v.className = 'verdict good';
+    v.textContent = bonusPct + '% bonus = ' + fmt(bonusMiles) + ' free miles. Roughly $' + est + ' in extra travel value at 1.5¢/mile.';
+    if (key === 'hyatt' && bank === 'csp') {
+      v.textContent += ' Heads up: CSP transfers to Hyatt at 4:3, not 1:1.';
+    }
+  }
+}
+
+function calcCashVsPts() {
+  const cash = parseFloat(document.getElementById('cv-cash').value) || 0;
+  const miles = parseFloat(document.getElementById('cv-miles').value) || 1;
+  const fees = parseFloat(document.getElementById('cv-fees').value) || 0;
+  const bench = parseFloat(document.getElementById('cv-bench').value) || 1.5;
+  const cpp = (cash - fees) / miles * 100;
+  const save = cash - fees;
+
+  document.getElementById('cv-cpp').textContent = cpp.toFixed(2) + '¢';
+  document.getElementById('cv-effcost').textContent = '$' + fees.toFixed(0);
+  document.getElementById('cv-save').textContent = '$' + save.toFixed(0);
+  document.getElementById('cv-cpp-lbl').textContent = cpp.toFixed(2) + '¢';
+  document.getElementById('cv-bench-lbl').textContent = bench + '¢';
+
+  const pct = Math.min((cpp / 3) * 100, 100);
+  const bar = document.getElementById('cv-bar');
+  bar.style.width = pct + '%';
+  bar.style.background = cpp >= bench ? '#10b981' : cpp >= bench * 0.7 ? '#f59e0b' : '#ef4444';
+
+  const v = document.getElementById('cv-verdict');
+  if (cpp >= bench * 1.2) {
+    v.className = 'verdict good';
+    v.textContent = 'Strong redemption at ' + cpp.toFixed(2) + '¢/point — above your benchmark. Use the points.';
+  } else if (cpp >= bench * 0.75) {
+    v.className = 'verdict warn';
+    v.textContent = 'Decent at ' + cpp.toFixed(2) + '¢/point. Close to benchmark. Fine if you have surplus miles, but not a standout deal.';
+  } else {
+    v.className = 'verdict bad';
+    v.textContent = 'Only ' + cpp.toFixed(2) + '¢/point — below benchmark. Cash might make more sense. Save those miles for a better opportunity.';
+  }
+}
+
+function calcCombo() {
+  const bank = document.getElementById('co-bank').value;
+  const key = document.getElementById('co-partner').value;
+  const p = partners[key];
+  const ratio = p && p.r[bank];
+  const pts = parseFloat(document.getElementById('co-points').value) || 0;
+  const mul = ratio ? parseRatio(ratio) : parseRatio(document.getElementById('co-ratio').value);
+  const bonusPct = parseFloat(document.getElementById('co-bonus').value) || 0;
+  const cash = parseFloat(document.getElementById('co-cash').value) || 0;
+  const milesNeeded = parseFloat(document.getElementById('co-miles').value) || 1;
+  const fees = parseFloat(document.getElementById('co-fees').value) || 0;
+
+  const base = pts * mul;
+  const totalMiles = base * (1 + bonusPct / 100);
+  const canBook = totalMiles >= milesNeeded;
+  const diff = totalMiles - milesNeeded;
+  const cpp = (cash - fees) / milesNeeded * 100;
+  const saved = cash - fees;
+
+  document.getElementById('co-totalmiles').textContent = fmt(totalMiles);
+  const cy = document.getElementById('co-canyou');
+  cy.textContent = canBook ? 'Yes' : 'No';
+  cy.style.color = canBook ? '#065f46' : '#7f1d1d';
+  const lo = document.getElementById('co-leftover');
+  lo.textContent = (diff >= 0 ? '+' : '') + fmt(diff);
+  lo.style.color = diff >= 0 ? '#065f46' : '#7f1d1d';
+  document.getElementById('co-cpp').textContent = cpp.toFixed(2) + '¢';
+  document.getElementById('co-paycash').textContent = '$' + fees.toFixed(0);
+  document.getElementById('co-saved').textContent = '$' + saved.toFixed(0);
+
+  const v = document.getElementById('co-verdict');
+  if (!ratio) {
+    v.className = 'verdict warn';
+    v.textContent = 'These two don\'t transfer. Pick a valid partner for this bank.';
+  } else if (!canBook) {
+    v.className = 'verdict bad';
+    v.textContent = 'You\'re ' + fmt(Math.abs(diff)) + ' miles short even with the bonus. Earn more or look for a lower-cost award.';
+  } else if (cpp >= 2.0) {
+    v.className = 'verdict good';
+    v.textContent = 'Solid move. ' + cpp.toFixed(2) + '¢/point and you save $' + saved.toFixed(0) + ' vs cash. Book it.';
+  } else if (cpp >= 1.2) {
+    v.className = 'verdict warn';
+    v.textContent = cpp.toFixed(2) + '¢/point — decent but not amazing. You save $' + saved.toFixed(0) + '. Fine if the miles need to be used.';
+  } else {
+    v.className = 'verdict bad';
+    v.textContent = 'Only ' + cpp.toFixed(2) + '¢/point. Weak redemption. Save those miles for a better flight.';
+  }
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function showTool() {
+  document.getElementById('intro-screen').classList.remove('visible');
+  document.getElementById('sim-main').classList.add('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goHome() {
+  document.getElementById('sim-main').classList.remove('visible');
+  document.getElementById('intro-screen').classList.add('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+buildPartnerSelect('t-partner', 'csr');
+buildPartnerSelect('co-partner', 'csr');
+onPartnerChange('t');
+onPartnerChange('co');
+calcCashVsPts();
+</script>
+  </div><!-- end sim-main -->
+</body>
+</html>
