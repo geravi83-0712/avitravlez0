@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AviTravelz: Points Transfer Simulator</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f9ff; color: #1e293b; min-height: 100vh; }
+
+  /* ── HEADER ── */
+  .site-header { background: #0c4a6e; color: white; padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
+  .site-logo { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  .site-logo span { color: #38bdf8; }
+  .site-tagline { font-size: 12px; color: #7dd3fc; margin-left: auto; }
+
+  /* ── PAGE LAYOUT ── */
+  .page-wrap { max-width: 820px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  .page-title { font-size: 22px; font-weight: 800; color: #0c4a6e; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: #64748b; margin-bottom: 20px; line-height: 1.5; }
+
+  /* ── BANK TABS ── */
+  .bank-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .bank-tab { padding: 10px 18px; border-radius: 10px; border: 2px solid transparent; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; background: white; color: #64748b; }
+  .bank-tab.chase.active   { background: #0f4c8c; color: white; border-color: #0f4c8c; }
+  .bank-tab.amex.active    { background: #006fcf; color: white; border-color: #006fcf; }
+  .bank-tab.capone.active  { background: #cc0000; color: white; border-color: #cc0000; }
+  .bank-tab:not(.active):hover { border-color: #cbd5e1; background: #f8fafc; }
+
+  /* ── SIMULATOR FRAME ── */
+  .sim-wrap { display: none; }
+  .sim-wrap.active { display: block; }
+
+  /* Tip bar above browser */
+  .tip-bar { background: #fefce8; border: 1.5px solid #fde047; border-radius: 10px; padding: 10px 14px; font-size: 12px; color: #713f12; margin-bottom: 12px; display: flex; gap: 8px; align-items: flex-start; line-height: 1.5; }
+  .tip-bar i { font-size: 16px; color: #ca8a04; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── BROWSER CHROME ── */
+  .browser { background: #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,.12); }
+  .browser-bar { background: #f1f5f9; padding: 10px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #cbd5e1; }
+  .browser-dots { display: flex; gap: 5px; }
+  .browser-dots span { width: 11px; height: 11px; border-radius: 50%; display: block; }
+  .dot-r { background: #ef4444; }
+  .dot-y { background: #f59e0b; }
+  .dot-g { background: #22c55e; }
+  .browser-url { flex: 1; background: white; border-radius: 6px; padding: 5px 10px; font-size: 11px; color: #64748b; font-family: monospace; border: 1px solid #e2e8f0; }
+  .browser-body { background: white; min-height: 400px; }
+
+  /* ── PROGRESS STRIP ── */
+  .sim-progress { padding: 12px 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px; }
+  .sim-step-dots { display: flex; gap: 6px; }
+  .sim-dot { width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; transition: background .3s; }
+  .sim-dot.done { background: #22c55e; }
+  .sim-dot.active { background: #0ea5e9; }
+  .sim-step-label { font-size: 11px; color: #64748b; margin-left: auto; }
+
+  /* ── SCREEN CONTENT ── */
+  .sim-screen { padding: 20px; min-height: 360px; display: none; position: relative; }
+  .sim-screen.active { display: block; }
+
+  /* Highlight pulse on clickable elements */
+  @keyframes pulse-ring {
+    0%   { box-shadow: 0 0 0 0 rgba(14,165,233,.5); }
+    70%  { box-shadow: 0 0 0 8px rgba(14,165,233,0); }
+    100% { box-shadow: 0 0 0 0 rgba(14,165,233,0); }
+  }
+  .highlight { animation: pulse-ring 1.8s infinite; border-radius: 6px; }
+
+  /* ── NAV BAR mock ── */
+  .mock-nav { display: flex; align-items: center; gap: 0; border-bottom: 1px solid #e2e8f0; margin: -20px -20px 20px; padding: 0 20px; background: white; overflow-x: auto; }
+  .mock-nav-logo { font-weight: 900; font-size: 15px; margin-right: 24px; padding: 14px 0; white-space: nowrap; }
+  .mock-nav-logo.chase-logo  { color: #0f4c8c; }
+  .mock-nav-logo.amex-logo   { color: #006fcf; }
+  .mock-nav-logo.capone-logo { color: #cc0000; }
+  .mock-nav-item { font-size: 12px; color: #475569; padding: 14px 12px; cursor: default; white-space: nowrap; }
+  .mock-nav-item.hl { color: #0f4c8c; border-bottom: 2px solid #0f4c8c; font-weight: 700; }
+  .mock-nav-item.hl.amex-hl   { color: #006fcf; border-color: #006fcf; }
+  .mock-nav-item.hl.capone-hl { color: #cc0000; border-color: #cc0000; }
+
+  /* ── GENERIC MOCK ELEMENTS ── */
+  .mock-page-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  .mock-page-sub   { font-size: 12px; color: #64748b; margin-bottom: 16px; }
+  .mock-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+  .mock-card-row { display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .mock-card { border: 2px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; font-size: 12px; cursor: default; flex: 1; min-width: 140px; }
+  .mock-card.selected { border-color: #0ea5e9; background: #f0f9ff; }
+  .mock-card-name { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+  .mock-card-pts { font-size: 18px; font-weight: 800; color: #0ea5e9; }
+  .mock-card-label { font-size: 10px; color: #94a3b8; }
+  .mock-partner-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 14px; }
+  .mock-partner { border: 2px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; transition: all .15s; }
+  .mock-partner:hover { border-color: #0ea5e9; background: #f0f9ff; }
+  .mock-partner.selected { border-color: #0ea5e9; background: #f0f9ff; }
+  .mock-partner-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+  .mock-partner-name { font-size: 10px; font-weight: 700; color: #1e293b; line-height: 1.3; }
+  .mock-partner-ratio { font-size: 9px; color: #64748b; }
+  .mock-input-group { margin-bottom: 14px; }
+  .mock-input { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; font-size: 13px; color: #1e293b; background: #f8fafc; }
+  .mock-input.hl-input { border-color: #0ea5e9; background: #f0f9ff; }
+  .mock-btn { display: inline-flex; align-items: center; gap: 6px; padding: 11px 20px; border-radius: 8px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .mock-btn.primary-chase  { background: #0f4c8c; color: white; }
+  .mock-btn.primary-amex   { background: #006fcf; color: white; }
+  .mock-btn.primary-capone { background: #cc0000; color: white; }
+  .mock-btn.secondary { background: #f1f5f9; color: #475569; }
+  .mock-info-row { display: flex; justify-content: space-between; font-size: 12px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; color: #475569; }
+  .mock-info-row strong { color: #1e293b; }
+  .mock-success-wrap { text-align: center; padding: 30px 10px; }
+  .mock-success-icon { font-size: 48px; margin-bottom: 12px; }
+  .mock-success-title { font-size: 20px; font-weight: 800; color: #15803d; margin-bottom: 6px; }
+  .mock-success-sub { font-size: 13px; color: #64748b; margin-bottom: 20px; line-height: 1.6; }
+  .mock-conf-box { background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 10px; padding: 14px 16px; text-align: left; max-width: 340px; margin: 0 auto 20px; }
+  .mock-conf-row { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 0; color: #475569; }
+  .mock-conf-row strong { color: #15803d; }
+
+  /* Click arrow annotation */
+  .click-hint { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: #0ea5e9; background: #e0f2fe; border-radius: 20px; padding: 3px 10px; margin-top: 6px; }
+
+  /* ── NAV BUTTONS ── */
+  .sim-nav { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
+  .sim-nav-btn { display: flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 8px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; }
+  .sim-nav-btn.prev { background: #f1f5f9; color: #475569; }
+  .sim-nav-btn.prev:disabled { opacity: .35; cursor: default; }
+  .sim-nav-btn.next-chase  { background: #0f4c8c; color: white; }
+  .sim-nav-btn.next-amex   { background: #006fcf; color: white; }
+  .sim-nav-btn.next-capone { background: #cc0000; color: white; }
+  .sim-nav-btn.restart { background: #f1f5f9; color: #475569; }
+  .sim-nav-step { font-size: 11px; color: #94a3b8; }
+
+  /* ── FACT FOOTER ── */
+  .fact-strip { margin-top: 16px; background: white; border-radius: 12px; padding: 16px 20px; border: 1.5px solid #e2e8f0; }
+  .fact-strip-title { font-size: 12px; font-weight: 800; color: #0c4a6e; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .5px; }
+  .fact-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+  .fact-item { background: #f8fafc; border-radius: 8px; padding: 10px 12px; }
+  .fact-item-title { font-size: 11px; font-weight: 800; color: #1e293b; margin-bottom: 3px; }
+  .fact-item-body { font-size: 11px; color: #64748b; line-height: 1.5; }
+
+  /* ── WARN BOX ── */
+  .warn-inline { background: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 8px; padding: 10px 12px; font-size: 11px; color: #9a3412; display: flex; gap: 8px; align-items: flex-start; line-height: 1.5; margin-top: 10px; }
+  .warn-inline i { font-size: 14px; color: #ea580c; flex-shrink: 0; margin-top: 1px; }
+
+
+
+  /* ── INTRO SCREEN ── */
+  .intro-screen { display: none; }
+  .intro-screen.visible { display: block; }
+  .sim-main { display: none; }
+  .sim-main.visible { display: block; }
+  .intro-card { background: white; border-radius: 16px; border: 1.5px solid #e2e8f0; padding: 28px 24px; margin-bottom: 16px; }
+  .intro-title { font-size: 24px; font-weight: 900; color: #0c4a6e; margin-bottom: 6px; line-height: 1.2; }
+  .intro-sub { font-size: 14px; color: #64748b; margin-bottom: 20px; line-height: 1.6; }
+  .intro-banks { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .intro-bank-chip { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; font-size: 12px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+  .intro-bank-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .intro-disclaimer { background: #fefce8; border: 1.5px solid #fde047; border-radius: 10px; padding: 12px 16px; font-size: 12px; color: #713f12; line-height: 1.6; margin-bottom: 20px; }
+  .intro-disclaimer strong { display: block; margin-bottom: 3px; }
+  .intro-steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .intro-step { display: flex; gap: 12px; align-items: flex-start; font-size: 12px; color: #475569; line-height: 1.5; }
+  .intro-step-num { width: 22px; height: 22px; border-radius: 50%; background: #0c4a6e; color: white; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .intro-start-btn { width: 100%; padding: 14px; border-radius: 10px; background: #0c4a6e; color: white; border: none; font-size: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background .2s; }
+  .intro-start-btn:hover { background: #0f4c8c; }
+  .bank-tab.bilt.active  { background: #1a1a2e; color: white; border-color: #1a1a2e; }
+  .bank-tab.citi.active  { background: #003087; color: white; border-color: #003087; }
+  .mock-nav-logo.bilt-logo { color: #1a1a2e; letter-spacing: -0.5px; }
+  .mock-nav-logo.citi-logo { color: #003087; }
+  .mock-nav-item.hl.bilt-hl { color: #1a1a2e; border-color: #1a1a2e; }
+  .mock-nav-item.hl.citi-hl { color: #003087; border-color: #003087; }
+  .mock-btn.primary-bilt { background: #1a1a2e; color: white; }
+  .mock-btn.primary-citi { background: #003087; color: white; }
+  .sim-nav-btn.next-bilt { background: #1a1a2e; color: white; }
+  .sim-nav-btn.next-citi { background: #003087; color: white; }
+  /* ── CHASE SUB-TABS ── */
+  .chase-mode-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .chase-mode-tab { padding: 8px 16px; border-radius: 8px; border: 2px solid #e2e8f0; font-size: 12px; font-weight: 700; cursor: pointer; background: white; color: #64748b; transition: all .2s; }
+  .chase-mode-tab.active { background: #0f4c8c; color: white; border-color: #0f4c8c; }
+  .chase-mode-panel { display: none; }
+  .chase-mode-panel.active { display: block; }
+  @media (max-width: 500px) {
+    .mock-card-row { flex-direction: column; }
+    .fact-grid { grid-template-columns: 1fr 1fr; }
+    .bank-tabs { gap: 6px; }
+    .bank-tab { padding: 8px 12px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <div class="site-logo">Avi<span>Travelz</span></div>
+  <div class="site-tagline">Points Transfer Simulator</div>
+</div>
+
+<div class="page-wrap">
+
+  <!-- ── INTRO SCREEN ── -->
+  <div class="intro-screen visible" id="intro-screen">
+    <div class="intro-card">
+      <div class="intro-title">Points Transfer Simulator</div>
+      <div class="intro-sub">This is a practice run. Walk through how to move your credit card points to an airline so when you do it for real, you already know the steps.</div>
+
+      <div class="intro-disclaimer">
+        <strong>Heads up before you start</strong>
+        These screens are not identical to the real bank portals. Layouts, button names, and menus change over time. But the overall process is the same across all of them. Use this to get comfortable with the flow, not to memorize every pixel.
+      </div>
+
+      <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:12px 16px;margin-bottom:20px;">
+        <div style="font-size:12px;font-weight:800;color:#0c4a6e;margin-bottom:8px;"><i class="ti ti-checklist" style="margin-right:5px;"></i>Before you start (real life)</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:#475569;line-height:1.5;">
+            <div style="width:20px;height:20px;border-radius:50%;background:#0ea5e9;color:white;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">1</div>
+            <div>You need a loyalty account with the airline you are transferring to. Most are free to join. Sign up on the airline's website before you start.</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:#475569;line-height:1.5;">
+            <div style="width:20px;height:20px;border-radius:50%;background:#0ea5e9;color:white;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">2</div>
+            <div>The first time you transfer to a new airline, your bank will ask you to link your loyalty account. You enter your account number and name. After that, it stays saved and you skip this step.</div>
+          </div>
+        </div>
+      </div>
+
+      <p style="font-size:12px;font-weight:800;color:#1e293b;margin-bottom:10px;">What you will practice</p>
+      <div class="intro-steps">
+        <div class="intro-step"><div class="intro-step-num">1</div><div>See your points dashboard and understand which cards can transfer to airlines and which ones cannot.</div></div>
+        <div class="intro-step"><div class="intro-step-num">2</div><div>For Chase: combine points from Freedom cards into your Sapphire first. This is a step most people miss.</div></div>
+        <div class="intro-step"><div class="intro-step-num">3</div><div>Pick an airline partner, enter your loyalty account number, and choose how many points to move.</div></div>
+        <div class="intro-step"><div class="intro-step-num">4</div><div>Review the transfer and confirm. In real life this is permanent, so the review step matters.</div></div>
+      </div>
+
+      <p style="font-size:12px;font-weight:800;color:#1e293b;margin-bottom:10px;">Banks covered in this simulator</p>
+      <div class="intro-banks">
+        <div class="intro-bank-chip"><div class="intro-bank-dot" style="background:#0f4c8c;"></div>Chase</div>
+        <div class="intro-bank-chip"><div class="intro-bank-dot" style="background:#006fcf;"></div>Amex</div>
+        <div class="intro-bank-chip"><div class="intro-bank-dot" style="background:#cc0000;"></div>Capital One</div>
+        <div class="intro-bank-chip"><div class="intro-bank-dot" style="background:#1a1a2e;"></div>Bilt</div>
+        <div class="intro-bank-chip"><div class="intro-bank-dot" style="background:#003087;"></div>Citi</div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:12px;background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:12px 16px;margin-bottom:16px;">
+        <i class="ti ti-phone" style="font-size:20px;color:#15803d;flex-shrink:0;margin-top:2px;"></i>
+        <div>
+          <div style="font-size:12px;font-weight:800;color:#15803d;margin-bottom:3px;">Prefer to do this over the phone?</div>
+          <div style="font-size:12px;color:#475569;line-height:1.6;">Every bank on this list lets you transfer points by calling the number on the back of your card. A rep can walk you through the whole thing. It is a good option if you get stuck online, feel unsure at the confirmation step, or just want a real person on the line before moving a large amount of points.</div>
+        </div>
+      </div>
+
+      <p style="font-size:11px;color:#94a3b8;margin-bottom:16px;line-height:1.5;">Nothing you do here is real. No points move, no accounts are touched. It is a simulator. Click around freely.</p>
+
+      <button class="intro-start-btn" onclick="showSim()"><i class="ti ti-player-play"></i> Start the Simulator</button>
+    </div>
+  </div>
+
+  <!-- ── MAIN SIM ── -->
+  <div class="sim-main" id="sim-main">
+    <div class="page-title">Points Transfer Simulator</div>
+    <div class="page-sub">Pick your bank. Walk through the steps. Nothing actually transfers.</div>
+
+    <div class="bank-tabs">
+      <button class="bank-tab chase active" onclick="switchBank('chase')">Chase</button>
+      <button class="bank-tab amex"   onclick="switchBank('amex')">Amex</button>
+      <button class="bank-tab capone" onclick="switchBank('capone')">Capital One</button>
+      <button class="bank-tab bilt"   onclick="switchBank('bilt')">Bilt</button>
+      <button class="bank-tab citi"   onclick="switchBank('citi')">Citi</button>
+    </div>
+
+  <!-- ═══════════════════════════════════════════
+       CHASE SIMULATOR
+  ════════════════════════════════════════════ -->
+  <div class="sim-wrap active" id="sim-chase">
+
+    <div class="tip-bar">
+      <i class="ti ti-bulb"></i>
+      <div><strong>Chase Freedom cards earn points too.</strong> But Freedom Unlimited and Freedom Flex cannot transfer to airlines on their own. You have to move those points to a Sapphire card first, then transfer. Do Combine first, then Transfer.</div>
+    </div>
+
+    <div class="chase-mode-tabs">
+      <button class="chase-mode-tab active" onclick="switchChaseMode('combine')">Step 1: Combine Points</button>
+      <button class="chase-mode-tab" onclick="switchChaseMode('transfer')">Step 2: Transfer Points</button>
+    </div>
+
+    <!-- COMBINE PANEL -->
+    <div class="chase-mode-panel active" id="chase-panel-combine">
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="browser-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <div class="browser-url" id="combine-url">https://ultimaterewards.com</div>
+      </div>
+
+      <div class="sim-progress">
+        <div class="sim-step-dots" id="combine-dots"></div>
+        <div class="sim-step-label" id="combine-step-label">Step 1 of 4</div>
+      </div>
+
+      <div class="browser-body">
+
+        <!-- COMBINE S1: Dashboard all 4 cards -->
+        <div class="sim-screen active" id="combine-s1">
+          <div class="mock-nav">
+            <div class="mock-nav-logo chase-logo">CHASE</div>
+            <div class="mock-nav-item">Accounts</div>
+            <div class="mock-nav-item">Pay &amp; Transfer</div>
+            <div class="mock-nav-item hl">Ultimate Rewards</div>
+          </div>
+          <div class="mock-page-title">Ultimate Rewards</div>
+          <div class="mock-page-sub">You have points across multiple cards. Only Sapphire cards can transfer to airlines.</div>
+          <div class="mock-label">Your cards</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+            <div class="mock-card" style="border-color:#0f4c8c;background:#eff6ff;">
+              <div class="mock-card-name">Sapphire Reserve</div>
+              <div style="font-size:10px;color:#64748b;margin-bottom:4px;">••••  4872</div>
+              <div class="mock-card-pts" style="color:#0f4c8c;">45,230</div>
+              <div class="mock-card-label" style="color:#1d4ed8;font-weight:700;">✓ Can transfer to airlines</div>
+            </div>
+            <div class="mock-card" style="border-color:#0f4c8c;background:#eff6ff;">
+              <div class="mock-card-name">Sapphire Preferred</div>
+              <div style="font-size:10px;color:#64748b;margin-bottom:4px;">••••  7391</div>
+              <div class="mock-card-pts" style="color:#0f4c8c;">87,450</div>
+              <div class="mock-card-label" style="color:#1d4ed8;font-weight:700;">✓ Can transfer to airlines</div>
+            </div>
+            <div class="mock-card" style="border-color:#fde047;background:#fefce8;">
+              <div class="mock-card-name">Freedom Unlimited</div>
+              <div style="font-size:10px;color:#64748b;margin-bottom:4px;">••••  2215</div>
+              <div class="mock-card-pts" style="color:#ca8a04;">12,890</div>
+              <div class="mock-card-label" style="color:#92400e;">⚠ Must combine first</div>
+            </div>
+            <div class="mock-card" style="border-color:#fde047;background:#fefce8;">
+              <div class="mock-card-name">Freedom Flex</div>
+              <div style="font-size:10px;color:#64748b;margin-bottom:4px;">••••  9043</div>
+              <div class="mock-card-pts" style="color:#ca8a04;">8,340</div>
+              <div class="mock-card-label" style="color:#92400e;">⚠ Must combine first</div>
+            </div>
+          </div>
+          <div class="warn-inline"><i class="ti ti-alert-triangle"></i><strong style="margin-right:4px;">Freedom cards cannot transfer to airlines on their own.</strong> Move those points to a Sapphire first, then transfer from there.</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;">
+            <div class="mock-btn secondary"><i class="ti ti-plane"></i> Book travel</div>
+            <div class="mock-btn secondary"><i class="ti ti-transfer"></i> Transfer points</div>
+            <div class="mock-btn primary-chase highlight"><i class="ti ti-arrows-join"></i> Combine points</div>
+          </div>
+          <div class="click-hint"><i class="ti ti-hand-finger"></i> Click "Combine points" to get started</div>
+        </div>
+
+        <!-- COMBINE S2: Dropdowns for FROM / TO + amount -->
+        <div class="sim-screen" id="combine-s2">
+          <div class="mock-nav">
+            <div class="mock-nav-logo chase-logo">CHASE</div>
+            <div class="mock-nav-item hl">Ultimate Rewards</div>
+          </div>
+          <div class="mock-page-title">Combine Points</div>
+          <div class="mock-page-sub">Select which card to move points from and which card to receive them.</div>
+
+          <div class="mock-input-group">
+            <div class="mock-label">Move points FROM</div>
+            <select class="mock-input hl-input" id="combine-from" onchange="updateCombinePreview()">
+              <option value="cfu">Freedom Unlimited ••••2215 (12,890 pts)</option>
+              <option value="cff">Freedom Flex ••••9043 (8,340 pts)</option>
+            </select>
+            <div style="font-size:11px;color:#64748b;margin-top:4px;">Freedom cards cannot transfer to airlines directly. That is why you are here.</div>
+          </div>
+
+          <div class="mock-input-group">
+            <div class="mock-label">Move points TO</div>
+            <select class="mock-input" id="combine-to" onchange="updateCombinePreview()">
+              <option value="csp">Sapphire Preferred ••••7391 (87,450 pts)</option>
+              <option value="csr">Sapphire Reserve ••••4872 (45,230 pts)</option>
+            </select>
+            <div style="font-size:11px;color:#64748b;margin-top:4px;">Only Sapphire and Ink Preferred can transfer to airlines. Points flow TO these cards only.</div>
+          </div>
+
+          <div class="mock-input-group">
+            <div class="mock-label">How many points to move?</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input class="mock-input hl-input" type="number" id="combine-amt" value="12890" oninput="updateCombinePreview()" style="flex:1;">
+              <button class="mock-btn secondary" onclick="setAllPoints()" style="white-space:nowrap;padding:10px 14px;font-size:12px;">Move All</button>
+            </div>
+          </div>
+
+          <div id="combine-preview" style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:12px 14px;font-size:12px;">
+            <div style="font-weight:700;color:#15803d;margin-bottom:8px;">Live preview</div>
+            <div class="mock-info-row" style="border-color:#d1fae5;"><span>Points moving</span><strong id="prev-amt" style="color:#0f4c8c;">12,890</strong></div>
+            <div class="mock-info-row" style="border-color:#d1fae5;"><span>From balance after</span><strong id="prev-from-after" style="color:#dc2626;">0</strong></div>
+            <div class="mock-info-row" style="border-color:transparent;"><span>To balance after</span><strong id="prev-to-after" style="color:#15803d;">100,340</strong></div>
+          </div>
+          <div class="tip-bar" style="margin-top:10px;"><i class="ti ti-bulb"></i><div>You can also pool points from Ink Business cards the same way. Any Chase card earning Ultimate Rewards can feed into Sapphire.</div></div>
+        </div>
+
+        <!-- COMBINE S3: Review -->
+        <div class="sim-screen" id="combine-s3">
+          <div class="mock-nav">
+            <div class="mock-nav-logo chase-logo">CHASE</div>
+            <div class="mock-nav-item hl">Ultimate Rewards</div>
+          </div>
+          <div class="mock-page-title">Review Your Combination</div>
+          <div class="mock-page-sub">Double-check everything below. This is instant and free.</div>
+          <div class="mock-info-row"><span>From card</span><strong id="rev-from">Freedom Unlimited ••••2215</strong></div>
+          <div class="mock-info-row"><span>To card</span><strong id="rev-to">Sapphire Preferred ••••7391</strong></div>
+          <div class="mock-info-row"><span>Points moving</span><strong id="rev-amt" style="color:#0f4c8c;">12,890 pts</strong></div>
+          <div class="mock-info-row"><span>From balance after</span><strong id="rev-from-after" style="color:#dc2626;">0 pts</strong></div>
+          <div class="mock-info-row" style="margin-bottom:14px;"><span>To balance after</span><strong id="rev-to-after" style="color:#059669;">100,340 pts</strong></div>
+          <div class="tip-bar"><i class="ti ti-bulb"></i><div>Unlike airline transfers, combining between Chase cards is reversible. You can move points back anytime. No pressure here.</div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+            <div class="mock-btn secondary">← Edit</div>
+            <div class="mock-btn primary-chase highlight"><i class="ti ti-check"></i> Confirm</div>
+          </div>
+        </div>
+
+        <!-- COMBINE S4: Success -->
+        <div class="sim-screen" id="combine-s4">
+          <div class="mock-success-wrap">
+            <div class="mock-success-icon">✅</div>
+            <div class="mock-success-title">Points Combined!</div>
+            <div class="mock-success-sub" id="combine-success-sub">Your 12,890 Freedom Unlimited points are now in your Sapphire Preferred.<br>Ready to transfer to an airline.</div>
+            <div class="mock-conf-box">
+              <div class="mock-conf-row"><span>Moved</span><strong id="conf-amt">12,890 pts</strong></div>
+              <div class="mock-conf-row"><span>From</span><strong id="conf-from">Freedom Unlimited ••••2215</strong></div>
+              <div class="mock-conf-row"><span>To</span><strong id="conf-to">Sapphire Preferred ••••7391</strong></div>
+              <div class="mock-conf-row"><span>New balance</span><strong id="conf-new-bal" style="color:#059669;">100,340 pts</strong></div>
+            </div>
+            <div style="font-size:12px;color:#64748b;max-width:360px;margin:0 auto 16px;line-height:1.6;">Now head to the Transfer Points tab and send those points to an airline. That is where the real magic happens.</div>
+            <button class="mock-btn primary-chase" onclick="switchChaseMode('transfer')" style="margin:0 auto;display:flex;"><i class="ti ti-arrow-right"></i>&nbsp;Go to Transfer Points</button>
+          </div>
+        </div>
+
+      </div><!-- browser-body -->
+
+      <div class="sim-nav">
+        <button class="sim-nav-btn prev" id="combine-prev" onclick="combineNav(-1)" disabled><i class="ti ti-arrow-left"></i> Back</button>
+        <span class="sim-nav-step" id="combine-nav-label">Step 1 of 5</span>
+        <button class="sim-nav-btn next-chase" id="combine-next" onclick="combineNav(1)">Next <i class="ti ti-arrow-right"></i></button>
+      </div>
+    </div><!-- browser -->
+    </div><!-- chase-panel-combine -->
+
+    <!-- TRANSFER PANEL -->
+    <div class="chase-mode-panel" id="chase-panel-transfer">
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="browser-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <div class="browser-url" id="chase-url">https://ultimaterewards.com</div>
+      </div>
+
+      <div class="sim-progress">
+        <div class="sim-step-dots" id="chase-dots"></div>
+        <div class="sim-step-label" id="chase-step-label">Step 1 of 6</div>
+      </div>
+
+      <div class="browser-body">
+
+        <!-- SCREEN 1: Dashboard -->
+        <div class="sim-screen active" id="chase-s1">
+          <div class="mock-nav">
+            <div class="mock-nav-logo chase-logo">CHASE</div>
+            <div class="mock-nav-item">Accounts</div>
+            <div class="mock-nav-item">Pay &amp; Transfer</div>
+            <div class="mock-nav-item hl">Ultimate Rewards</div>
+            <div class="mock-nav-item">More</div>
+          </div>
+          <div class="mock-page-title">Ultimate Rewards</div>
+          <div class="mock-page-sub">Earn and redeem points on travel, dining, and more.</div>
+          <div class="mock-label">Your cards</div>
+          <div class="mock-card-row">
+            <div class="mock-card selected">
+              <div class="mock-card-name">Sapphire Preferred</div>
+              <div class="mock-card-pts">87,450</div>
+              <div class="mock-card-label">Ultimate Rewards points</div>
+            </div>
+            <div class="mock-card">
+              <div class="mock-card-name">Freedom Unlimited</div>
+              <div class="mock-card-pts">12,890</div>
+              <div class="mock-card-label">Ultimate Rewards points</div>
+            </div>
+          </div>
+          <div class="mock-label" style="margin-top:16px;">What would you like to do?</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+            <div class="mock-btn secondary"><i class="ti ti-plane"></i> Book travel</div>
+            <div class="mock-btn primary-chase highlight" style="cursor:pointer;"><i class="ti ti-transfer"></i> Transfer points</div>
+            <div class="mock-btn secondary"><i class="ti ti-cash"></i> Get cash back</div>
+          </div>
+          <div class="click-hint"><i class="ti ti-hand-finger"></i> Click "Transfer points" to continue</div>
+        </div>
+
+        <!-- SCREEN 2: Select partner -->
+        <div class="sim-screen" id="chase-s2">
+          <div class="mock-nav">
+            <div class="mock-nav-logo chase-logo">CHASE</div>
+            <div class="mock-nav-item">Accounts</div>
+            <div class="mock-nav-item">Pay &amp; Transfer</div>
+            <div class="mock-nav-item hl">Ultimate Rewards</div>
+          </div>
+          <div class="mock-page-title">Transfer to Travel Partners</div>
+          <div class="mock-page-sub">All transfers are 1:1. Most are instant. Select a partner to continue.</div>
+          <div class="mock-label">Airline partners</div>
+          <div class="mock-partner-grid">
+            <div class="mock-partner selected" onclick="selectPartner(this,'chase')">
+              <span class="mock-partner-icon">✈️</span>
+              <div class="mock-partner-name">United MileagePlus</div>
+              <div class="mock-partner-ratio">1,000 pts = 1,000 miles · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'chase')">
+              <span class="mock-partner-icon">🇬🇧</span>
+              <div class="mock-partner-name">British Airways Avios</div>
+              <div class="mock-partner-ratio">1,000 pts = 1,000 Avios · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'chase')">
+              <span class="mock-partner-icon">🇫🇷</span>
+              <div class="mock-partner-name">Air France/KLM Flying Blue</div>
+              <div class="mock-partner-ratio">1,000 pts = 1,000 miles · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'chase')">
+              <span class="mock-partner-icon">🦅</span>
+              <div class="mock-partner-name">Southwest Rapid Rewards</div>
+              <div class="mock-partner-ratio">1,000 pts = 1,000 pts · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'chase')">
+              <span class="mock-partner-icon">🍁</span>
+              <div class="mock-partner-name">Air Canada Aeroplan</div>
+              <div class="mock-partner-ratio">1,000 pts = 1,000 pts · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'chase')">
+              <span class="mock-partner-icon">🌸</span>
+              <div class="mock-partner-name">Singapore KrisFlyer</div>
+              <div class="mock-partner-ratio">1,000 pts = 1,000 miles · 1-3 days</div>
+            </div>
+          </div>
+          <div class="warn-inline"><i class="ti ti-alert-triangle"></i> Transfers are one way and permanent. Before transferring, confirm the award seat is available directly on the airline's website. That is the only reliable source before you move your points.</div>
+        </div>
+
+        <!-- SCREEN 3: Enter loyalty number -->
+        <div class="sim-screen" id="chase-s3">
+          <div class="mock-nav">
+            <div class="mock-nav-logo chase-logo">CHASE</div>
+            <div class="mock-nav-item hl">Ultimate Rewards</div>
+          </div>
+          <div class="mock-page-title">United MileagePlus</div>
+          <div class="mock-page-sub">Enter your MileagePlus account number to link your account.</div>
+          <div class="mock-input-group">
+            <div class="mock-label">MileagePlus account number</div>
+            <input class="mock-input hl-input" type="text" value="UA-4829103" readonly>
+            <div class="click-hint" style="margin-top:6px;"><i class="ti ti-info-circle"></i> Find this under "Profile" on united.com or the United app</div>
+          </div>
+          <div class="mock-input-group">
+            <div class="mock-label">First name (must match your MileagePlus account)</div>
+            <input class="mock-input" type="text" value="Jerry" readonly>
+          </div>
+          <div class="mock-input-group">
+            <div class="mock-label">Last name</div>
+            <input class="mock-input" type="text" value="Avila" readonly>
+          </div>
+          <div class="warn-inline"><i class="ti ti-alert-triangle"></i> The name must match exactly. A mismatch will cause the transfer to fail or get stuck for days.</div>
+        </div>
+
+        <!-- SCREEN 4: Enter amount -->
+        <div class="sim-screen" id="chase-s4">
+          <div class="mock-nav">
+            <div class="mock-nav-logo chase-logo">CHASE</div>
+            <div class="mock-nav-item hl">Ultimate Rewards</div>
+          </div>
+          <div class="mock-page-title">How many points?</div>
+          <div class="mock-page-sub">Transfers must be in increments of 1,000. Minimum transfer is 1,000 points.</div>
+          <div class="mock-info-row"><span>Available points</span><strong>87,450</strong></div>
+          <div class="mock-info-row"><span>Transfer to</span><strong>United MileagePlus (UA-4829103)</strong></div>
+          <div class="mock-info-row" style="margin-bottom:14px;"><span>Transfer ratio</span><strong>1,000 pts = 1,000 miles</strong></div>
+          <div class="mock-input-group">
+            <div class="mock-label">Points to transfer</div>
+            <input class="mock-input hl-input" type="number" value="60000" readonly>
+            <div style="font-size:11px;color:#64748b;margin-top:5px;">You will receive: <strong>60,000 United miles</strong></div>
+          </div>
+          <div class="mock-input-group">
+            <div class="mock-label">Points remaining after transfer</div>
+            <input class="mock-input" type="text" value="27,450" readonly>
+          </div>
+          <div class="click-hint"><i class="ti ti-bulb"></i> Only transfer what you need. Transfer the exact amount the award costs.</div>
+        </div>
+
+        <!-- SCREEN 5: Review and confirm -->
+        <div class="sim-screen" id="chase-s5">
+          <div class="mock-nav">
+            <div class="mock-nav-logo chase-logo">CHASE</div>
+            <div class="mock-nav-item hl">Ultimate Rewards</div>
+          </div>
+          <div class="mock-page-title">Review Your Transfer</div>
+          <div class="mock-page-sub">Please review all details carefully before confirming. Transfers cannot be reversed.</div>
+          <div class="mock-info-row"><span>From</span><strong>Chase Sapphire Preferred</strong></div>
+          <div class="mock-info-row"><span>To</span><strong>United MileagePlus</strong></div>
+          <div class="mock-info-row"><span>Account number</span><strong>UA-4829103</strong></div>
+          <div class="mock-info-row"><span>Account name</span><strong>Jerry Avila</strong></div>
+          <div class="mock-info-row"><span>Points transferring</span><strong style="color:#0f4c8c;">60,000 points</strong></div>
+          <div class="mock-info-row"><span>Miles you will receive</span><strong style="color:#0f4c8c;">60,000 miles</strong></div>
+          <div class="mock-info-row" style="margin-bottom:14px;"><span>Transfer time</span><strong>Instant</strong></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="mock-btn secondary">Edit</div>
+            <div class="mock-btn primary-chase highlight"><i class="ti ti-check"></i> Confirm transfer</div>
+          </div>
+          <div class="warn-inline" style="margin-top:12px;"><i class="ti ti-alert-triangle"></i> This is the final step. Once you tap Confirm, the transfer is permanent and points cannot be returned.</div>
+        </div>
+
+        <!-- SCREEN 6: Success -->
+        <div class="sim-screen" id="chase-s6">
+          <div class="mock-success-wrap">
+            <div class="mock-success-icon">🎉</div>
+            <div class="mock-success-title">Transfer Complete!</div>
+            <div class="mock-success-sub">Your 60,000 Chase points are now 60,000 United MileagePlus miles.<br>Go book that seat now before availability disappears.</div>
+            <div class="mock-conf-box">
+              <div class="mock-conf-row"><span>Confirmation</span><strong>#CHR-2026-0047831</strong></div>
+              <div class="mock-conf-row"><span>Miles added</span><strong>60,000</strong></div>
+              <div class="mock-conf-row"><span>New MileagePlus balance</span><strong>60,000</strong></div>
+              <div class="mock-conf-row"><span>Transfer time</span><strong>Instant</strong></div>
+            </div>
+            <div style="font-size:12px;color:#64748b;max-width:360px;margin:0 auto;line-height:1.6;">Screenshot this confirmation. Head to united.com, log into your MileagePlus account, and book your award flight.</div>            <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:12px 16px;max-width:400px;margin:12px auto 0;text-align:left;">
+              <div style="font-size:11px;font-weight:800;color:#0c4a6e;margin-bottom:5px;"><i class="ti ti-clock" style="margin-right:4px;"></i>A note on timing</div>
+              <div style="font-size:11px;color:#475569;line-height:1.6;">Most transfers show up within minutes, sometimes seconds. Occasionally it takes a few hours, and in rare cases up to 24 hours or longer depending on the partner. If miles have not appeared after 24 hours, contact your bank or the airline directly. Citi tends to be the slowest of the bunch.</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- browser-body -->
+
+      <div class="sim-nav">
+        <button class="sim-nav-btn prev" id="chase-prev" onclick="chaseNav(-1)" disabled><i class="ti ti-arrow-left"></i> Back</button>
+        <span class="sim-nav-step" id="chase-nav-label">Step 1 of 6</span>
+        <button class="sim-nav-btn next-chase" id="chase-next" onclick="chaseNav(1)">Next <i class="ti ti-arrow-right"></i></button>
+      </div>
+    </div><!-- browser -->
+    </div><!-- chase-panel-transfer -->
+
+    <div class="fact-strip">
+      <div class="fact-strip-title">Chase Quick Facts</div>
+      <div class="fact-grid">
+        <div class="fact-item"><div class="fact-item-title">Transfer ratio</div><div class="fact-item-body">1:1 to all partners. 1,000 Chase points = 1,000 airline miles.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Speed</div><div class="fact-item-body">Most partners are instant. Singapore and a few others take 1-3 days.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Minimum</div><div class="fact-item-body">1,000 points. Must transfer in 1,000-point increments.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Best partners</div><div class="fact-item-body">United, Hyatt, Air France/KLM Flying Blue, British Avios, Aeroplan.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Transfer bonus</div><div class="fact-item-body">Chase occasionally offers 25-30% bonuses to select partners. Check before transferring.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Where to find it</div><div class="fact-item-body">Log in to chase.com, click Ultimate Rewards, then "Transfer points."</div></div>
+      </div>
+    </div>
+
+  </div><!-- sim-chase -->
+
+
+  <!-- ═══════════════════════════════════════════
+       AMEX SIMULATOR
+  ════════════════════════════════════════════ -->
+  <div class="sim-wrap" id="sim-amex">
+
+    <div class="tip-bar">
+      <i class="ti ti-bulb"></i>
+      <div><strong>Amex Membership Rewards</strong> has 20+ transfer partners including Delta, ANA, and Aeroplan. Transfers are usually instant or within 24 hours. point.me is an official Amex partner to find award seats.</div>
+    </div>
+
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="browser-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <div class="browser-url" id="amex-url">https://americanexpress.com/rewards</div>
+      </div>
+
+      <div class="sim-progress">
+        <div class="sim-step-dots" id="amex-dots"></div>
+        <div class="sim-step-label" id="amex-step-label">Step 1 of 6</div>
+      </div>
+
+      <div class="browser-body">
+
+        <!-- SCREEN 1: Dashboard -->
+        <div class="sim-screen active" id="amex-s1">
+          <div class="mock-nav">
+            <div class="mock-nav-logo amex-logo">AMERICAN EXPRESS</div>
+            <div class="mock-nav-item">Home</div>
+            <div class="mock-nav-item hl amex-hl">Rewards</div>
+            <div class="mock-nav-item">Travel</div>
+          </div>
+          <div class="mock-page-title">Membership Rewards</div>
+          <div class="mock-page-sub">Your points are ready to work for you.</div>
+          <div class="mock-card-row">
+            <div class="mock-card selected">
+              <div class="mock-card-name">Amex Gold Card</div>
+              <div class="mock-card-pts" style="color:#006fcf;">124,300</div>
+              <div class="mock-card-label">Membership Rewards points</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;">
+            <div class="mock-btn secondary"><i class="ti ti-plane"></i> Book travel</div>
+            <div class="mock-btn primary-amex highlight"><i class="ti ti-transfer"></i> Transfer points</div>
+            <div class="mock-btn secondary"><i class="ti ti-gift"></i> Gift cards</div>
+          </div>
+          <div class="click-hint"><i class="ti ti-hand-finger"></i> Click "Transfer points" to continue</div>
+        </div>
+
+        <!-- SCREEN 2: Select partner -->
+        <div class="sim-screen" id="amex-s2">
+          <div class="mock-nav">
+            <div class="mock-nav-logo amex-logo">AMERICAN EXPRESS</div>
+            <div class="mock-nav-item hl amex-hl">Rewards</div>
+          </div>
+          <div class="mock-page-title">Transfer Points</div>
+          <div class="mock-page-sub">Choose an airline partner. Most are instant, but some (ANA, Singapore, AeroMexico, Iberia) can take 1-2 days or more.</div>
+          <div class="mock-label">Airline partners</div>
+          <div class="mock-partner-grid">
+            <div class="mock-partner" onclick="selectAmexPartner(this,'delta')">
+              <span class="mock-partner-icon">🔵</span>
+              <div class="mock-partner-name">Delta SkyMiles</div>
+              <div class="mock-partner-ratio">1,000 pts = 1,000 miles · Instant</div>
+              <div style="font-size:9px;color:#dc2626;font-weight:700;margin-top:3px;">⚠ Transfer fee applies</div>
+            </div>
+            <div class="mock-partner selected" onclick="selectAmexPartner(this,'')">
+              <span class="mock-partner-icon">🍁</span>
+              <div class="mock-partner-name">Air Canada Aeroplan</div>
+              <div class="mock-partner-ratio">1,000 pts = 1,000 pts · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectAmexPartner(this,'')">
+              <span class="mock-partner-icon">🇬🇧</span>
+              <div class="mock-partner-name">British Airways Avios</div>
+              <div class="mock-partner-ratio">1,000 pts = 1,000 Avios · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectAmexPartner(this,'')">
+              <span class="mock-partner-icon">🌸</span>
+              <div class="mock-partner-name">ANA Mileage Club</div>
+              <div class="mock-partner-ratio">1,000 pts = 1,000 miles · 1-2+ days</div>
+            </div>
+            <div class="mock-partner" onclick="selectAmexPartner(this,'')">
+              <span class="mock-partner-icon">🇫🇷</span>
+              <div class="mock-partner-name">Air France/KLM Flying Blue</div>
+              <div class="mock-partner-ratio">1,000 pts = 1,000 miles · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectAmexPartner(this,'')">
+              <span class="mock-partner-icon">🌟</span>
+              <div class="mock-partner-name">Singapore KrisFlyer</div>
+              <div class="mock-partner-ratio">1,000 pts = 1,000 miles · 1-3 days</div>
+            </div>
+          </div>
+
+          <!-- Fee warning: only visible when Delta is selected -->
+          <div id="amex-delta-fee-box" style="display:none;background:#fff1f2;border:1.5px solid #fecdd3;border-radius:10px;padding:14px 16px;margin-bottom:12px;">
+            <div style="font-size:12px;font-weight:800;color:#be123c;margin-bottom:6px;"><i class="ti ti-alert-triangle" style="margin-right:4px;"></i>Heads up: Amex charges a transfer fee for Delta</div>
+            <div style="font-size:12px;color:#475569;line-height:1.6;margin-bottom:10px;">Amex is the only bank that passes a federal excise tax to cardholders when transferring to U.S. airlines. The fee is <strong>$0.0006 per point</strong>, capped at <strong>$99</strong>. It only applies to Delta and JetBlue. Every other Amex partner is free.</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px 12px;font-size:11px;text-align:center;flex:1;min-width:100px;"><div style="font-weight:800;color:#be123c;font-size:14px;" id="delta-fee-ex">$42</div><div style="color:#64748b;">Fee on 70,000 pts</div></div>
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px 12px;font-size:11px;text-align:center;flex:1;min-width:100px;"><div style="font-weight:800;color:#be123c;font-size:14px;">$99 max</div><div style="color:#64748b;">Cap per transfer</div></div>
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px 12px;font-size:11px;text-align:center;flex:1;min-width:100px;"><div style="font-weight:800;color:#059669;font-size:14px;">$0</div><div style="color:#64748b;">Fee on all other partners</div></div>
+            </div>
+            <div style="font-size:11px;color:#64748b;line-height:1.5;margin-bottom:8px;"><strong>Pay with your card, not your points.</strong> Paying the fee with points only gets you 0.5 cents per point, which is terrible value. Use the card instead and save your points for flights.</div>
+            <div style="font-size:11px;color:#475569;line-height:1.5;background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:8px 10px;"><strong>Pro tip: avoid the fee entirely.</strong> You can book Delta flights using Air France/KLM Flying Blue, Virgin Atlantic Flying Club, or AeroMexico Club Premier, all Amex partners. None of those charge an excise fee.</div>
+          </div>
+
+          <div class="warn-inline"><i class="ti ti-alert-triangle"></i> Before transferring, go to the airline's website and confirm the award seat is actually available. Transfers cannot be reversed, so verify first.</div>
+        </div>
+
+        <!-- SCREEN 3: Link account -->
+        <div class="sim-screen" id="amex-s3">
+          <div class="mock-nav">
+            <div class="mock-nav-logo amex-logo">AMERICAN EXPRESS</div>
+            <div class="mock-nav-item hl amex-hl">Rewards</div>
+          </div>
+          <div class="mock-page-title">Link Your Aeroplan Account</div>
+          <div class="mock-page-sub">You only need to do this once. After that, your accounts stay linked.</div>
+          <div class="mock-input-group">
+            <div class="mock-label">Aeroplan number</div>
+            <input class="mock-input hl-input" type="text" value="AC-27849201" readonly>
+            <div class="click-hint" style="margin-top:6px;"><i class="ti ti-info-circle"></i> Find this under "Profile" on aircanada.com or the Air Canada app</div>
+          </div>
+          <div class="mock-input-group">
+            <div class="mock-label">First name</div>
+            <input class="mock-input" type="text" value="Jerry" readonly>
+          </div>
+          <div class="mock-input-group">
+            <div class="mock-label">Last name</div>
+            <input class="mock-input" type="text" value="Avila" readonly>
+          </div>
+          <div class="mock-input-group">
+            <div class="mock-label">Date of birth (to verify identity)</div>
+            <input class="mock-input" type="text" value="06/15/1983" readonly>
+          </div>
+          <div class="warn-inline"><i class="ti ti-alert-triangle"></i> Amex sometimes asks for your date of birth to link the account. This is normal.</div>
+        </div>
+
+        <!-- SCREEN 4: Amount -->
+        <div class="sim-screen" id="amex-s4">
+          <div class="mock-nav">
+            <div class="mock-nav-logo amex-logo">AMERICAN EXPRESS</div>
+            <div class="mock-nav-item hl amex-hl">Rewards</div>
+          </div>
+          <div class="mock-page-title">How many points?</div>
+          <div class="mock-page-sub">Transfers must be in increments of 1,000.</div>
+          <div class="mock-info-row"><span>Available points</span><strong>124,300</strong></div>
+          <div class="mock-info-row"><span>Transfer to</span><strong>Air Canada Aeroplan (AC-27849201)</strong></div>
+          <div class="mock-info-row" style="margin-bottom:14px;"><span>Transfer ratio</span><strong>1,000 pts = 1,000 Aeroplan pts</strong></div>
+          <div class="mock-input-group">
+            <div class="mock-label">Points to transfer</div>
+            <input class="mock-input hl-input" type="number" value="70000" readonly>
+            <div style="font-size:11px;color:#64748b;margin-top:5px;">You will receive: <strong>70,000 Aeroplan points</strong></div>
+          </div>
+          <div class="mock-input-group">
+            <div class="mock-label">Transfer bonus (if active)</div>
+            <input class="mock-input" type="text" value="None currently. Check amex.com/rewards for promotions." readonly>
+          </div>
+          <div class="click-hint"><i class="ti ti-bulb"></i> Amex runs transfer bonuses of 20-30% a few times a year. If one is active, wait for it before transferring big amounts.</div>
+        </div>
+
+        <!-- SCREEN 5: Review -->
+        <div class="sim-screen" id="amex-s5">
+          <div class="mock-nav">
+            <div class="mock-nav-logo amex-logo">AMERICAN EXPRESS</div>
+            <div class="mock-nav-item hl amex-hl">Rewards</div>
+          </div>
+          <div class="mock-page-title">Review Your Transfer</div>
+          <div class="mock-page-sub">Check everything before confirming. This cannot be undone.</div>
+          <div class="mock-info-row"><span>From</span><strong>Amex Gold Card</strong></div>
+          <div class="mock-info-row"><span>To</span><strong>Air Canada Aeroplan</strong></div>
+          <div class="mock-info-row"><span>Account number</span><strong>AC-27849201</strong></div>
+          <div class="mock-info-row"><span>Account name</span><strong>Jerry Avila</strong></div>
+          <div class="mock-info-row"><span>Points transferring</span><strong style="color:#006fcf;">70,000 points</strong></div>
+          <div class="mock-info-row"><span>Points you will receive</span><strong style="color:#006fcf;">70,000 Aeroplan pts</strong></div>
+          <div class="mock-info-row" style="margin-bottom:16px;"><span>Transfer time</span><strong>Instant</strong></div>
+
+          <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+            <div style="font-size:12px;font-weight:800;color:#1e293b;margin-bottom:4px;"><i class="ti ti-shield-check" style="color:#006fcf;margin-right:4px;"></i>Security verification</div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:10px;line-height:1.5;">Amex sometimes asks for your card's 4-digit security code before completing a transfer. This is a standard identity check, not an error. The 4-digit code is printed on the <strong>front</strong> of your Amex card, above the card number on the right side. This is different from Visa and Mastercard, which have a 3-digit code on the back.</div>
+            <div class="mock-label">4-digit card ID (if prompted)</div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input class="mock-input hl-input" type="text" value="7 3 4 2" readonly style="max-width:120px;letter-spacing:6px;font-weight:800;font-size:16px;text-align:center;">
+              <div style="font-size:11px;color:#64748b;line-height:1.5;">Front of card, above the card number. 4 digits, no spaces.</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="mock-btn secondary">Edit</div>
+            <div class="mock-btn primary-amex highlight"><i class="ti ti-check"></i> Confirm transfer</div>
+          </div>
+          <div class="warn-inline" style="margin-top:12px;"><i class="ti ti-alert-triangle"></i> Final step. Once confirmed, the points leave your Amex account permanently.</div>
+        </div>
+
+        <!-- SCREEN 6: Success -->
+        <div class="sim-screen" id="amex-s6">
+          <div class="mock-success-wrap">
+            <div class="mock-success-icon">🎉</div>
+            <div class="mock-success-title">Transfer Complete!</div>
+            <div class="mock-success-sub">Your 70,000 Amex points are now 70,000 Air Canada Aeroplan points.<br>Head to aircanada.com to book your award flight.</div>
+            <div class="mock-conf-box">
+              <div class="mock-conf-row"><span>Confirmation</span><strong>#AMX-2026-0193845</strong></div>
+              <div class="mock-conf-row"><span>Points transferred</span><strong>70,000</strong></div>
+              <div class="mock-conf-row"><span>New Aeroplan balance</span><strong>70,000</strong></div>
+              <div class="mock-conf-row"><span>Transfer time</span><strong>Instant</strong></div>
+            </div>
+            <div style="font-size:12px;color:#64748b;max-width:360px;margin:0 auto;line-height:1.6;">Screenshot this page. Log into your Aeroplan account, confirm the miles landed, then go book your award before availability changes.</div>            <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:12px 16px;max-width:400px;margin:12px auto 0;text-align:left;">
+              <div style="font-size:11px;font-weight:800;color:#0c4a6e;margin-bottom:5px;"><i class="ti ti-clock" style="margin-right:4px;"></i>A note on timing</div>
+              <div style="font-size:11px;color:#475569;line-height:1.6;">Amex says transfers can take up to 48 hours. Most show up faster, sometimes within minutes. Partners like ANA, Singapore KrisFlyer, AeroMexico, Asia Miles, and Iberia tend to be slower (1-2 days or more). If miles have not appeared after 48 hours, contact Amex directly.</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- browser-body -->
+
+      <div class="sim-nav">
+        <button class="sim-nav-btn prev" id="amex-prev" onclick="amexNav(-1)" disabled><i class="ti ti-arrow-left"></i> Back</button>
+        <span class="sim-nav-step" id="amex-nav-label">Step 1 of 6</span>
+        <button class="sim-nav-btn next-amex" id="amex-next" onclick="amexNav(1)">Next <i class="ti ti-arrow-right"></i></button>
+      </div>
+    </div><!-- browser -->
+
+    <div class="fact-strip">
+      <div class="fact-strip-title">Amex Quick Facts</div>
+      <div class="fact-grid">
+        <div class="fact-item"><div class="fact-item-title">Transfer ratio</div><div class="fact-item-body">1:1 to most partners. A few are at 250:200 (slightly worse).</div></div>
+        <div class="fact-item"><div class="fact-item-title">Speed</div><div class="fact-item-body">Most are instant. ANA and Singapore can take 2-5 days.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Minimum</div><div class="fact-item-body">1,000 points in 1,000-point increments.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Best partners</div><div class="fact-item-body">Aeroplan, ANA, Air France/KLM, British Avios, Delta (for domestic).</div></div>
+        <div class="fact-item"><div class="fact-item-title">Transfer bonus</div><div class="fact-item-body">Amex runs 20-30% bonuses a few times per year. Watch for them before large transfers.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Pro tip</div><div class="fact-item-body">point.me is an official Amex partner. Use it to find the best use of your Amex points before transferring.</div></div>
+        <div class="fact-item" style="border:1.5px solid #fecdd3;background:#fff1f2;"><div class="fact-item-title" style="color:#be123c;">Transfer fee (U.S. airlines only)</div><div class="fact-item-body">Amex is the only bank that charges a fee: $0.0006 per point, capped at $99. Applies only to Delta and JetBlue. All other partners are free. Chase, Citi, Capital One, and Bilt all absorb this tax themselves and charge you nothing.</div></div>
+      </div>
+    </div>
+
+  </div><!-- sim-amex -->
+
+
+  <!-- ═══════════════════════════════════════════
+       CAPITAL ONE SIMULATOR
+  ════════════════════════════════════════════ -->
+  <div class="sim-wrap" id="sim-capone">
+
+    <div class="tip-bar">
+      <i class="ti ti-bulb"></i>
+      <div><strong>Capital One Miles</strong> transfer to 15+ airline and hotel partners. Most are instant. Best partner for international: Turkish Airlines Miles&amp;Smiles (incredible sweet spots for Star Alliance flights).</div>
+    </div>
+
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="browser-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <div class="browser-url" id="capone-url">https://capitalone.com/card/rewards</div>
+      </div>
+
+      <div class="sim-progress">
+        <div class="sim-step-dots" id="capone-dots"></div>
+        <div class="sim-step-label" id="capone-step-label">Step 1 of 6</div>
+      </div>
+
+      <div class="browser-body">
+
+        <!-- SCREEN 1: Dashboard -->
+        <div class="sim-screen active" id="capone-s1">
+          <div class="mock-nav">
+            <div class="mock-nav-logo capone-logo">Capital One</div>
+            <div class="mock-nav-item">Accounts</div>
+            <div class="mock-nav-item hl capone-hl">Rewards</div>
+            <div class="mock-nav-item">Travel</div>
+          </div>
+          <div class="mock-page-title">Miles &amp; Rewards</div>
+          <div class="mock-page-sub">Earn, track, and redeem your miles.</div>
+          <div class="mock-card-row">
+            <div class="mock-card selected">
+              <div class="mock-card-name">Venture X</div>
+              <div class="mock-card-pts" style="color:#cc0000;">98,200</div>
+              <div class="mock-card-label">Capital One miles</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;">
+            <div class="mock-btn secondary"><i class="ti ti-plane"></i> Book travel</div>
+            <div class="mock-btn primary-capone highlight"><i class="ti ti-transfer"></i> Transfer miles</div>
+            <div class="mock-btn secondary"><i class="ti ti-receipt"></i> Statement credit</div>
+          </div>
+          <div class="click-hint"><i class="ti ti-hand-finger"></i> Click "Transfer miles" to continue</div>
+        </div>
+
+        <!-- SCREEN 2: Select partner -->
+        <div class="sim-screen" id="capone-s2">
+          <div class="mock-nav">
+            <div class="mock-nav-logo capone-logo">Capital One</div>
+            <div class="mock-nav-item hl capone-hl">Rewards</div>
+          </div>
+          <div class="mock-page-title">Transfer Miles</div>
+          <div class="mock-page-sub">Select a travel partner. Most transfers complete within minutes.</div>
+          <div class="mock-label">Airline partners</div>
+          <div class="mock-partner-grid">
+            <div class="mock-partner selected" onclick="selectPartner(this,'capone')">
+              <span class="mock-partner-icon">🇹🇷</span>
+              <div class="mock-partner-name">Turkish Airlines Miles&amp;Smiles</div>
+              <div class="mock-partner-ratio">1,000 mi = 1,000 miles · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'capone')">
+              <span class="mock-partner-icon">🍁</span>
+              <div class="mock-partner-name">Air Canada Aeroplan</div>
+              <div class="mock-partner-ratio">1,000 mi = 1,000 pts · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'capone')">
+              <span class="mock-partner-icon">🇫🇷</span>
+              <div class="mock-partner-name">Air France/KLM Flying Blue</div>
+              <div class="mock-partner-ratio">1,000 mi = 1,000 miles · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'capone')">
+              <span class="mock-partner-icon">🌏</span>
+              <div class="mock-partner-name">Avianca LifeMiles</div>
+              <div class="mock-partner-ratio">1,000 mi = 1,000 miles · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'capone')">
+              <span class="mock-partner-icon">🇬🇧</span>
+              <div class="mock-partner-name">British Airways Avios</div>
+              <div class="mock-partner-ratio">1,000 mi = 1,000 Avios · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'capone')">
+              <span class="mock-partner-icon">✈️</span>
+              <div class="mock-partner-name">TAP Air Portugal Miles&amp;Go</div>
+              <div class="mock-partner-ratio">1,000 mi = 1,000 miles · Instant</div>
+            </div>
+          </div>
+          <div class="warn-inline"><i class="ti ti-alert-triangle"></i> Confirm your award seat exists before transferring. Capital One transfers are permanent.</div>
+        </div>
+
+        <!-- SCREEN 3: Link account -->
+        <div class="sim-screen" id="capone-s3">
+          <div class="mock-nav">
+            <div class="mock-nav-logo capone-logo">Capital One</div>
+            <div class="mock-nav-item hl capone-hl">Rewards</div>
+          </div>
+          <div class="mock-page-title">Link Your Miles&amp;Smiles Account</div>
+          <div class="mock-page-sub">Enter your Turkish Airlines loyalty account details.</div>
+          <div class="mock-input-group">
+            <div class="mock-label">Miles&amp;Smiles account number</div>
+            <input class="mock-input hl-input" type="text" value="TK-9283710" readonly>
+            <div class="click-hint" style="margin-top:6px;"><i class="ti ti-info-circle"></i> Sign up free at turkishairlines.com if you don't have one yet. Takes 2 minutes.</div>
+          </div>
+          <div class="mock-input-group">
+            <div class="mock-label">First name</div>
+            <input class="mock-input" type="text" value="Jerry" readonly>
+          </div>
+          <div class="mock-input-group">
+            <div class="mock-label">Last name</div>
+            <input class="mock-input" type="text" value="Avila" readonly>
+          </div>
+          <div class="warn-inline"><i class="ti ti-alert-triangle"></i> Capital One links your account the first time. After that, the partner appears in a saved list for faster transfers.</div>
+        </div>
+
+        <!-- SCREEN 4: Amount -->
+        <div class="sim-screen" id="capone-s4">
+          <div class="mock-nav">
+            <div class="mock-nav-logo capone-logo">Capital One</div>
+            <div class="mock-nav-item hl capone-hl">Rewards</div>
+          </div>
+          <div class="mock-page-title">How many miles?</div>
+          <div class="mock-page-sub">Transfers must be in increments of 1,000.</div>
+          <div class="mock-info-row"><span>Available miles</span><strong>98,200</strong></div>
+          <div class="mock-info-row"><span>Transfer to</span><strong>Turkish Airlines Miles&amp;Smiles (TK-9283710)</strong></div>
+          <div class="mock-info-row" style="margin-bottom:14px;"><span>Transfer ratio</span><strong>1,000 Capital One miles = 1,000 Miles&amp;Smiles</strong></div>
+          <div class="mock-input-group">
+            <div class="mock-label">Miles to transfer</div>
+            <input class="mock-input hl-input" type="number" value="45000" readonly>
+            <div style="font-size:11px;color:#64748b;margin-top:5px;">You will receive: <strong>45,000 Miles&amp;Smiles</strong></div>
+          </div>
+          <div class="mock-input-group">
+            <div class="mock-label">Miles remaining after transfer</div>
+            <input class="mock-input" type="text" value="53,200" readonly>
+          </div>
+          <div class="click-hint"><i class="ti ti-bulb"></i> Turkish Miles&amp;Smiles is a sleeper hit. 45,000 miles can book United or Lufthansa business class to Europe that would cost 100,000+ miles elsewhere.</div>
+        </div>
+
+        <!-- SCREEN 5: Review -->
+        <div class="sim-screen" id="capone-s5">
+          <div class="mock-nav">
+            <div class="mock-nav-logo capone-logo">Capital One</div>
+            <div class="mock-nav-item hl capone-hl">Rewards</div>
+          </div>
+          <div class="mock-page-title">Review Your Transfer</div>
+          <div class="mock-page-sub">This transfer cannot be reversed. Review everything below.</div>
+          <div class="mock-info-row"><span>From</span><strong>Venture X</strong></div>
+          <div class="mock-info-row"><span>To</span><strong>Turkish Airlines Miles&amp;Smiles</strong></div>
+          <div class="mock-info-row"><span>Account number</span><strong>TK-9283710</strong></div>
+          <div class="mock-info-row"><span>Account name</span><strong>Jerry Avila</strong></div>
+          <div class="mock-info-row"><span>Miles transferring</span><strong style="color:#cc0000;">45,000 miles</strong></div>
+          <div class="mock-info-row"><span>Miles you will receive</span><strong style="color:#cc0000;">45,000 Miles&amp;Smiles</strong></div>
+          <div class="mock-info-row" style="margin-bottom:14px;"><span>Transfer time</span><strong>Within minutes</strong></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="mock-btn secondary">Edit</div>
+            <div class="mock-btn primary-capone highlight"><i class="ti ti-check"></i> Confirm transfer</div>
+          </div>
+          <div class="warn-inline" style="margin-top:12px;"><i class="ti ti-alert-triangle"></i> Once confirmed, your miles leave Capital One permanently. Make sure your award seat is already confirmed available.</div>
+        </div>
+
+        <!-- SCREEN 6: Success -->
+        <div class="sim-screen" id="capone-s6">
+          <div class="mock-success-wrap">
+            <div class="mock-success-icon">🎉</div>
+            <div class="mock-success-title">Transfer Complete!</div>
+            <div class="mock-success-sub">Your 45,000 Capital One miles are now 45,000 Turkish Airlines Miles&amp;Smiles.<br>Head to turkishairlines.com to book your award seat now.</div>
+            <div class="mock-conf-box">
+              <div class="mock-conf-row"><span>Confirmation</span><strong>#C1-2026-0087412</strong></div>
+              <div class="mock-conf-row"><span>Miles transferred</span><strong>45,000</strong></div>
+              <div class="mock-conf-row"><span>New Miles&amp;Smiles balance</span><strong>45,000</strong></div>
+              <div class="mock-conf-row"><span>Transfer time</span><strong>Within minutes</strong></div>
+            </div>
+            <div style="font-size:12px;color:#64748b;max-width:360px;margin:0 auto;line-height:1.6;">Screenshot this. Log into your Miles&amp;Smiles account to confirm the miles landed. Then book your award before availability closes.</div>            <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:12px 16px;max-width:400px;margin:12px auto 0;text-align:left;">
+              <div style="font-size:11px;font-weight:800;color:#0c4a6e;margin-bottom:5px;"><i class="ti ti-clock" style="margin-right:4px;"></i>A note on timing</div>
+              <div style="font-size:11px;color:#475569;line-height:1.6;">Most transfers show up within minutes, sometimes seconds. Occasionally it takes a few hours, and in rare cases up to 24 hours or longer depending on the partner. If miles have not appeared after 24 hours, contact your bank or the airline directly. Citi tends to be the slowest of the bunch.</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- browser-body -->
+
+      <div class="sim-nav">
+        <button class="sim-nav-btn prev" id="capone-prev" onclick="caponeNav(-1)" disabled><i class="ti ti-arrow-left"></i> Back</button>
+        <span class="sim-nav-step" id="capone-nav-label">Step 1 of 6</span>
+        <button class="sim-nav-btn next-capone" id="capone-next" onclick="caponeNav(1)">Next <i class="ti ti-arrow-right"></i></button>
+      </div>
+    </div><!-- browser -->
+
+    <div class="fact-strip">
+      <div class="fact-strip-title">Capital One Quick Facts</div>
+      <div class="fact-grid">
+        <div class="fact-item"><div class="fact-item-title">Transfer ratio</div><div class="fact-item-body">1:1 to most partners. A few are at 2:1.5 (slightly less than 1:1).</div></div>
+        <div class="fact-item"><div class="fact-item-title">Speed</div><div class="fact-item-body">Most transfers complete within minutes. A few partners take up to 2 days.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Minimum</div><div class="fact-item-body">1,000 miles in 1,000-mile increments.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Best partners</div><div class="fact-item-body">Turkish Airlines, Aeroplan, Avianca LifeMiles, Flying Blue.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Hidden gem</div><div class="fact-item-body">Turkish Miles&amp;Smiles lets you book Star Alliance flights (United, Lufthansa) for far fewer miles than those airlines charge directly.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Where to find it</div><div class="fact-item-body">Log in to capitalone.com, click Rewards, then "Transfer miles."</div></div>
+        <div class="fact-item"><div class="fact-item-title">Combining miles</div><div class="fact-item-body">Both Venture and Venture X can transfer to airlines directly. No combining needed. But you can pool miles across cards in the Capital One app under Rewards settings.</div></div>
+      </div>
+    </div>
+
+  </div><!-- sim-capone -->
+
+  <!-- ═══════════════════════════════════════════
+       BILT SIMULATOR
+  ════════════════════════════════════════════ -->
+  <div class="sim-wrap" id="sim-bilt">
+
+    <div class="tip-bar">
+      <i class="ti ti-bulb"></i>
+      <div><strong>Bilt Rewards</strong> is the only program that earns points on rent and mortgage payments with no fee. Transfers 1:1 to 14+ partners including United, American, Alaska, Hyatt, and Air Canada. Transfers are usually instant. <strong>Important:</strong> make at least 5 transactions per statement period or your points will not post.</div>
+    </div>
+
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="browser-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <div class="browser-url" id="bilt-url">https://biltrewards.com</div>
+      </div>
+
+      <div class="sim-progress">
+        <div class="sim-step-dots" id="bilt-dots"></div>
+        <div class="sim-step-label" id="bilt-step-label">Step 1 of 6</div>
+      </div>
+
+      <div class="browser-body">
+
+        <!-- BILT S1: Dashboard -->
+        <div class="sim-screen active" id="bilt-s1">
+          <div class="mock-nav">
+            <div class="mock-nav-logo bilt-logo">BILT</div>
+            <div class="mock-nav-item">Home</div>
+            <div class="mock-nav-item hl bilt-hl">Rewards</div>
+            <div class="mock-nav-item">Payments</div>
+          </div>
+          <div class="mock-page-title">Your Bilt Points</div>
+          <div class="mock-page-sub">Earned on rent, mortgage, dining, travel, and everyday purchases.</div>
+          <div class="mock-card-row">
+            <div class="mock-card selected" style="border-color:#1a1a2e;background:#f8fafc;">
+              <div class="mock-card-name">Bilt Mastercard</div>
+              <div style="font-size:10px;color:#64748b;margin-bottom:4px;">••••  5519</div>
+              <div class="mock-card-pts" style="color:#1a1a2e;">54,200</div>
+              <div class="mock-card-label">Bilt Points available</div>
+            </div>
+          </div>
+          <div class="warn-inline" style="border-color:#bfdbfe;background:#eff6ff;"><i class="ti ti-info-circle" style="color:#2563eb;"></i><div style="color:#1e40af;">You need at least 5 transactions this statement period for your points to post. Check your transaction count in the app before transferring.</div></div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;">
+            <div class="mock-btn secondary"><i class="ti ti-home"></i> Pay rent</div>
+            <div class="mock-btn secondary"><i class="ti ti-plane"></i> Book travel</div>
+            <div class="mock-btn primary-bilt highlight"><i class="ti ti-transfer"></i> Transfer points</div>
+          </div>
+          <div class="click-hint"><i class="ti ti-hand-finger"></i> Click "Transfer points" to continue</div>
+        </div>
+
+        <!-- BILT S2: Select partner -->
+        <div class="sim-screen" id="bilt-s2">
+          <div class="mock-nav">
+            <div class="mock-nav-logo bilt-logo">BILT</div>
+            <div class="mock-nav-item hl bilt-hl">Rewards</div>
+          </div>
+          <div class="mock-page-title">Transfer to Travel Partners</div>
+          <div class="mock-page-sub">All transfers are 1:1. Most land within minutes. Select a partner.</div>
+          <div class="mock-label">Airline partners</div>
+          <div class="mock-partner-grid">
+            <div class="mock-partner selected" onclick="selectPartner(this,'bilt')">
+              <span class="mock-partner-icon">✈️</span>
+              <div class="mock-partner-name">United MileagePlus</div>
+              <div class="mock-partner-ratio">1:1 · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'bilt')">
+              <span class="mock-partner-icon">🦅</span>
+              <div class="mock-partner-name">American AAdvantage</div>
+              <div class="mock-partner-ratio">1:1 · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'bilt')">
+              <span class="mock-partner-icon">🌲</span>
+              <div class="mock-partner-name">Alaska Mileage Plan</div>
+              <div class="mock-partner-ratio">1:1 · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'bilt')">
+              <span class="mock-partner-icon">🍁</span>
+              <div class="mock-partner-name">Air Canada Aeroplan</div>
+              <div class="mock-partner-ratio">1:1 · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'bilt')">
+              <span class="mock-partner-icon">🇫🇷</span>
+              <div class="mock-partner-name">Air France/KLM Flying Blue</div>
+              <div class="mock-partner-ratio">1:1 · Instant</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'bilt')">
+              <span class="mock-partner-icon">🇹🇷</span>
+              <div class="mock-partner-name">Turkish Miles&amp;Smiles</div>
+              <div class="mock-partner-ratio">1:1 · Instant</div>
+            </div>
+          </div>
+          <div class="warn-inline"><i class="ti ti-alert-triangle"></i> Transfers cannot be reversed. Always confirm the award seat is available directly on the airline's website before transferring.</div>
+        </div>
+
+        <!-- BILT S3: Enter loyalty number -->
+        <div class="sim-screen" id="bilt-s3">
+          <div class="mock-nav">
+            <div class="mock-nav-logo bilt-logo">BILT</div>
+            <div class="mock-nav-item hl bilt-hl">Rewards</div>
+          </div>
+          <div class="mock-page-title">United MileagePlus</div>
+          <div class="mock-page-sub">Link your MileagePlus account to transfer points.</div>
+          <div class="mock-input-group">
+            <div class="mock-label">MileagePlus account number</div>
+            <input class="mock-input hl-input" type="text" value="UA-4829103" readonly>
+            <div class="click-hint" style="margin-top:6px;"><i class="ti ti-info-circle"></i> Find this under Profile on united.com or the United app</div>
+          </div>
+          <div class="mock-input-group">
+            <div class="mock-label">First name</div>
+            <input class="mock-input" type="text" value="Jerry" readonly>
+          </div>
+          <div class="mock-input-group">
+            <div class="mock-label">Last name</div>
+            <input class="mock-input" type="text" value="Avila" readonly>
+          </div>
+          <div class="tip-bar"><i class="ti ti-bulb"></i><div>Bilt saves your linked accounts. After the first time, you pick from a saved list. Much faster on repeat transfers.</div></div>
+        </div>
+
+        <!-- BILT S4: Enter amount -->
+        <div class="sim-screen" id="bilt-s4">
+          <div class="mock-nav">
+            <div class="mock-nav-logo bilt-logo">BILT</div>
+            <div class="mock-nav-item hl bilt-hl">Rewards</div>
+          </div>
+          <div class="mock-page-title">How many points?</div>
+          <div class="mock-page-sub">Minimum 1,000 points. Transfers in 1,000-point increments.</div>
+          <div class="mock-info-row"><span>Available points</span><strong>54,200</strong></div>
+          <div class="mock-info-row"><span>Transfer to</span><strong>United MileagePlus (UA-4829103)</strong></div>
+          <div class="mock-info-row" style="margin-bottom:14px;"><span>Ratio</span><strong>1,000 pts = 1,000 miles</strong></div>
+          <div class="mock-input-group">
+            <div class="mock-label">Points to transfer</div>
+            <input class="mock-input hl-input" type="number" value="50000" readonly>
+            <div style="font-size:11px;color:#64748b;margin-top:5px;">You will receive: <strong>50,000 United miles</strong></div>
+          </div>
+          <div class="mock-input-group">
+            <div class="mock-label">Balance after transfer</div>
+            <input class="mock-input" type="text" value="4,200 pts remaining" readonly>
+          </div>
+          <div class="click-hint"><i class="ti ti-bulb"></i> Bilt points are especially valuable because you earn them on rent with zero fees. Transfer only what you need for the specific award.</div>
+        </div>
+
+        <!-- BILT S5: Review -->
+        <div class="sim-screen" id="bilt-s5">
+          <div class="mock-nav">
+            <div class="mock-nav-logo bilt-logo">BILT</div>
+            <div class="mock-nav-item hl bilt-hl">Rewards</div>
+          </div>
+          <div class="mock-page-title">Review Transfer</div>
+          <div class="mock-page-sub">Check everything. This cannot be undone.</div>
+          <div class="mock-info-row"><span>From</span><strong>Bilt Mastercard ••••5519</strong></div>
+          <div class="mock-info-row"><span>To</span><strong>United MileagePlus</strong></div>
+          <div class="mock-info-row"><span>Account</span><strong>UA-4829103 · Jerry Avila</strong></div>
+          <div class="mock-info-row"><span>Points transferring</span><strong style="color:#1a1a2e;">50,000 pts</strong></div>
+          <div class="mock-info-row"><span>Miles you receive</span><strong style="color:#1a1a2e;">50,000 miles</strong></div>
+          <div class="mock-info-row" style="margin-bottom:14px;"><span>Transfer time</span><strong>Instant</strong></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="mock-btn secondary">Edit</div>
+            <div class="mock-btn primary-bilt highlight"><i class="ti ti-check"></i> Confirm transfer</div>
+          </div>
+          <div class="warn-inline" style="margin-top:12px;"><i class="ti ti-alert-triangle"></i> Once confirmed, points leave your Bilt account permanently.</div>
+        </div>
+
+        <!-- BILT S6: Success -->
+        <div class="sim-screen" id="bilt-s6">
+          <div class="mock-success-wrap">
+            <div class="mock-success-icon">🎉</div>
+            <div class="mock-success-title">Transfer Complete!</div>
+            <div class="mock-success-sub">Your 50,000 Bilt points are now 50,000 United MileagePlus miles.<br>Head to united.com and book your award now.</div>
+            <div class="mock-conf-box">
+              <div class="mock-conf-row"><span>Confirmation</span><strong>#BLT-2026-0038142</strong></div>
+              <div class="mock-conf-row"><span>Miles added</span><strong>50,000</strong></div>
+              <div class="mock-conf-row"><span>New MileagePlus balance</span><strong>50,000</strong></div>
+              <div class="mock-conf-row"><span>Transfer time</span><strong>Instant</strong></div>
+            </div>
+            <div style="font-size:12px;color:#64748b;max-width:360px;margin:0 auto;line-height:1.6;">Screenshot this. Log into United and book the award seat before availability closes.</div>            <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:12px 16px;max-width:400px;margin:12px auto 0;text-align:left;">
+              <div style="font-size:11px;font-weight:800;color:#0c4a6e;margin-bottom:5px;"><i class="ti ti-clock" style="margin-right:4px;"></i>A note on timing</div>
+              <div style="font-size:11px;color:#475569;line-height:1.6;">Most transfers show up within minutes, sometimes seconds. Occasionally it takes a few hours, and in rare cases up to 24 hours or longer depending on the partner. If miles have not appeared after 24 hours, contact your bank or the airline directly. Citi tends to be the slowest of the bunch.</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- browser-body -->
+
+      <div class="sim-nav">
+        <button class="sim-nav-btn prev" id="bilt-prev" onclick="biltNav(-1)" disabled><i class="ti ti-arrow-left"></i> Back</button>
+        <span class="sim-nav-step" id="bilt-nav-label">Step 1 of 6</span>
+        <button class="sim-nav-btn next-bilt" id="bilt-next" onclick="biltNav(1)">Next <i class="ti ti-arrow-right"></i></button>
+      </div>
+    </div><!-- browser -->
+
+    <div class="fact-strip">
+      <div class="fact-strip-title">Bilt Quick Facts</div>
+      <div class="fact-grid">
+        <div class="fact-item"><div class="fact-item-title">Transfer ratio</div><div class="fact-item-body">1:1 to all partners. No fees ever.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Speed</div><div class="fact-item-body">Most partners are instant or within a few minutes.</div></div>
+        <div class="fact-item"><div class="fact-item-title">5-transaction rule</div><div class="fact-item-body">You must make at least 5 purchases per statement period or your points will not post that month.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Best partners</div><div class="fact-item-body">United, American, Alaska, Hyatt, Aeroplan, World of Hyatt, IHG.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Rent day bonus</div><div class="fact-item-body">On the 1st of each month, Bilt runs double points promos on select categories. Worth checking before big purchases.</div></div>
+        <div class="fact-item"><div class="fact-item-title">point.me partner</div><div class="fact-item-body">Bilt is an official partner of point.me. Use it to find the best use of your points before transferring.</div></div>
+      </div>
+    </div>
+
+  </div><!-- sim-bilt -->
+
+
+  <!-- ═══════════════════════════════════════════
+       CITI SIMULATOR
+  ════════════════════════════════════════════ -->
+  <div class="sim-wrap" id="sim-citi">
+
+    <div class="tip-bar">
+      <i class="ti ti-bulb"></i>
+      <div><strong>Citi ThankYou Points</strong> transfer to 15+ partners. The biggest standout is Turkish Airlines Miles&amp;Smiles, which lets you book Star Alliance flights (United, Lufthansa, ANA) for far fewer miles than booking directly. Citi transfers can take 24-72 hours, slower than the other banks.</div>
+    </div>
+
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="browser-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <div class="browser-url" id="citi-url">https://thankyou.com</div>
+      </div>
+
+      <div class="sim-progress">
+        <div class="sim-step-dots" id="citi-dots"></div>
+        <div class="sim-step-label" id="citi-step-label">Step 1 of 6</div>
+      </div>
+
+      <div class="browser-body">
+
+        <!-- CITI S1: Dashboard -->
+        <div class="sim-screen active" id="citi-s1">
+          <div class="mock-nav">
+            <div class="mock-nav-logo citi-logo">Citi</div>
+            <div class="mock-nav-item">Accounts</div>
+            <div class="mock-nav-item hl citi-hl">ThankYou Points</div>
+            <div class="mock-nav-item">Travel</div>
+          </div>
+          <div class="mock-page-title">ThankYou Points</div>
+          <div class="mock-page-sub">Earn and redeem points on travel, dining, and everyday purchases.</div>
+          <div class="mock-card-row">
+            <div class="mock-card selected" style="border-color:#003087;background:#eff6ff;">
+              <div class="mock-card-name">Citi Premier Card</div>
+              <div style="font-size:10px;color:#64748b;margin-bottom:4px;">••••  3847</div>
+              <div class="mock-card-pts" style="color:#003087;">78,500</div>
+              <div class="mock-card-label">ThankYou Points</div>
+            </div>
+            <div class="mock-card" style="border-color:#003087;background:#eff6ff;">
+              <div class="mock-card-name">Citi Double Cash</div>
+              <div style="font-size:10px;color:#64748b;margin-bottom:4px;">••••  6201</div>
+              <div class="mock-card-pts" style="color:#003087;">9,140</div>
+              <div class="mock-card-label">ThankYou Points (pooled)</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;">
+            <div class="mock-btn secondary"><i class="ti ti-plane"></i> Book travel</div>
+            <div class="mock-btn secondary"><i class="ti ti-cash"></i> Cash back</div>
+            <div class="mock-btn primary-citi highlight"><i class="ti ti-transfer"></i> Transfer to airlines</div>
+          </div>
+          <div class="click-hint"><i class="ti ti-hand-finger"></i> Click "Transfer to airlines" to continue</div>
+        </div>
+
+        <!-- CITI S2: Select partner -->
+        <div class="sim-screen" id="citi-s2">
+          <div class="mock-nav">
+            <div class="mock-nav-logo citi-logo">Citi</div>
+            <div class="mock-nav-item hl citi-hl">ThankYou Points</div>
+          </div>
+          <div class="mock-page-title">Transfer to Airline Partners</div>
+          <div class="mock-page-sub">Select a partner. Transfers take 24-72 hours for most airlines.</div>
+          <div class="mock-label">Airline partners</div>
+          <div class="mock-partner-grid">
+            <div class="mock-partner selected" onclick="selectPartner(this,'citi')">
+              <span class="mock-partner-icon">🇹🇷</span>
+              <div class="mock-partner-name">Turkish Airlines Miles&amp;Smiles</div>
+              <div class="mock-partner-ratio">1:1 · 24-48 hrs</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'citi')">
+              <span class="mock-partner-icon">🌟</span>
+              <div class="mock-partner-name">Qatar Airways Avios</div>
+              <div class="mock-partner-ratio">1:1 · 24-72 hrs</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'citi')">
+              <span class="mock-partner-icon">🇫🇷</span>
+              <div class="mock-partner-name">Air France/KLM Flying Blue</div>
+              <div class="mock-partner-ratio">1:1 · 24-48 hrs</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'citi')">
+              <span class="mock-partner-icon">🌸</span>
+              <div class="mock-partner-name">Singapore KrisFlyer</div>
+              <div class="mock-partner-ratio">1:1 · 24-72 hrs</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'citi')">
+              <span class="mock-partner-icon">🌏</span>
+              <div class="mock-partner-name">Avianca LifeMiles</div>
+              <div class="mock-partner-ratio">1:1 · 24-48 hrs</div>
+            </div>
+            <div class="mock-partner" onclick="selectPartner(this,'citi')">
+              <span class="mock-partner-icon">🇬🇧</span>
+              <div class="mock-partner-name">Virgin Atlantic Flying Club</div>
+              <div class="mock-partner-ratio">1:1 · 24-48 hrs</div>
+            </div>
+          </div>
+          <div class="warn-inline"><i class="ti ti-alert-triangle"></i> Citi transfers are slower than other banks. Plan ahead. Do not wait until the last minute to transfer if you have a booking window closing.</div>
+        </div>
+
+        <!-- CITI S3: Enter loyalty number -->
+        <div class="sim-screen" id="citi-s3">
+          <div class="mock-nav">
+            <div class="mock-nav-logo citi-logo">Citi</div>
+            <div class="mock-nav-item hl citi-hl">ThankYou Points</div>
+          </div>
+          <div class="mock-page-title">Turkish Airlines Miles&amp;Smiles</div>
+          <div class="mock-page-sub">Enter your Miles&amp;Smiles account details to link for transfer.</div>
+          <div class="mock-input-group">
+            <div class="mock-label">Miles&amp;Smiles account number</div>
+            <input class="mock-input hl-input" type="text" value="TK-9283710" readonly>
+            <div class="click-hint" style="margin-top:6px;"><i class="ti ti-info-circle"></i> Sign up free at turkishairlines.com if you do not have one</div>
+          </div>
+          <div class="mock-input-group">
+            <div class="mock-label">First name</div>
+            <input class="mock-input" type="text" value="Jerry" readonly>
+          </div>
+          <div class="mock-input-group">
+            <div class="mock-label">Last name</div>
+            <input class="mock-input" type="text" value="Avila" readonly>
+          </div>
+          <div class="tip-bar"><i class="ti ti-bulb"></i><div>Turkish Miles&amp;Smiles is one of the best-kept secrets in award travel. 45,000 miles can book a United business class flight to Europe that would cost 115,000+ United miles directly.</div></div>
+        </div>
+
+        <!-- CITI S4: Enter amount -->
+        <div class="sim-screen" id="citi-s4">
+          <div class="mock-nav">
+            <div class="mock-nav-logo citi-logo">Citi</div>
+            <div class="mock-nav-item hl citi-hl">ThankYou Points</div>
+          </div>
+          <div class="mock-page-title">How many points?</div>
+          <div class="mock-page-sub">Minimum 1,000 points in 1,000-point increments.</div>
+          <div class="mock-info-row"><span>Total available</span><strong>87,640 pts</strong></div>
+          <div class="mock-info-row"><span>Citi Premier ••••3847</span><strong>78,500 pts</strong></div>
+          <div class="mock-info-row" style="margin-bottom:14px;"><span>Citi Double Cash ••••6201 (pooled)</span><strong>9,140 pts</strong></div>
+          <div class="mock-input-group">
+            <div class="mock-label">Points to transfer</div>
+            <input class="mock-input hl-input" type="number" value="45000" readonly>
+            <div style="font-size:11px;color:#64748b;margin-top:5px;">You will receive: <strong>45,000 Miles&amp;Smiles</strong></div>
+          </div>
+          <div class="mock-input-group">
+            <div class="mock-label">Balance after transfer</div>
+            <input class="mock-input" type="text" value="42,640 pts remaining" readonly>
+          </div>
+          <div class="warn-inline"><i class="ti ti-alert-triangle"></i> Citi takes 24-72 hours. Transfer now and keep checking your Miles&amp;Smiles account. Book the award as soon as miles appear.</div>
+        </div>
+
+        <!-- CITI S5: Review -->
+        <div class="sim-screen" id="citi-s5">
+          <div class="mock-nav">
+            <div class="mock-nav-logo citi-logo">Citi</div>
+            <div class="mock-nav-item hl citi-hl">ThankYou Points</div>
+          </div>
+          <div class="mock-page-title">Review Transfer</div>
+          <div class="mock-page-sub">This cannot be reversed. Double-check everything.</div>
+          <div class="mock-info-row"><span>From</span><strong>Citi ThankYou Points (pooled)</strong></div>
+          <div class="mock-info-row"><span>To</span><strong>Turkish Airlines Miles&amp;Smiles</strong></div>
+          <div class="mock-info-row"><span>Account</span><strong>TK-9283710 · Jerry Avila</strong></div>
+          <div class="mock-info-row"><span>Points transferring</span><strong style="color:#003087;">45,000 pts</strong></div>
+          <div class="mock-info-row"><span>Miles you receive</span><strong style="color:#003087;">45,000 Miles&amp;Smiles</strong></div>
+          <div class="mock-info-row" style="margin-bottom:14px;"><span>Transfer time</span><strong>24-48 hours</strong></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="mock-btn secondary">Edit</div>
+            <div class="mock-btn primary-citi highlight"><i class="ti ti-check"></i> Confirm transfer</div>
+          </div>
+          <div class="warn-inline" style="margin-top:12px;"><i class="ti ti-alert-triangle"></i> Transfers are permanent. Points leave your Citi account immediately. Miles appear in your airline account within 24-72 hours.</div>
+        </div>
+
+        <!-- CITI S6: Success -->
+        <div class="sim-screen" id="citi-s6">
+          <div class="mock-success-wrap">
+            <div class="mock-success-icon">🎉</div>
+            <div class="mock-success-title">Transfer Submitted!</div>
+            <div class="mock-success-sub">Your 45,000 Citi points are on their way to Turkish Airlines Miles&amp;Smiles.<br>Allow 24-72 hours for miles to appear in your account.</div>
+            <div class="mock-conf-box">
+              <div class="mock-conf-row"><span>Confirmation</span><strong>#CTI-2026-0091204</strong></div>
+              <div class="mock-conf-row"><span>Points submitted</span><strong>45,000</strong></div>
+              <div class="mock-conf-row"><span>Expected arrival</span><strong>Within 24-72 hours</strong></div>
+              <div class="mock-conf-row"><span>Arriving at</span><strong>TK-9283710</strong></div>
+            </div>
+            <div style="font-size:12px;color:#64748b;max-width:360px;margin:0 auto;line-height:1.6;">Screenshot this confirmation. Check your Miles&amp;Smiles account daily. Once miles land, book the award immediately before availability changes.</div>            <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:12px 16px;max-width:400px;margin:12px auto 0;text-align:left;">
+              <div style="font-size:11px;font-weight:800;color:#0c4a6e;margin-bottom:5px;"><i class="ti ti-clock" style="margin-right:4px;"></i>A note on timing</div>
+              <div style="font-size:11px;color:#475569;line-height:1.6;">Citi is the slowest of the major banks. Most transfers arrive in 24-48 hours but some partners can take up to 72 hours. Check your airline account daily after submitting. If miles have not appeared after 72 hours, contact Citi directly.</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- browser-body -->
+
+      <div class="sim-nav">
+        <button class="sim-nav-btn prev" id="citi-prev" onclick="citiNav(-1)" disabled><i class="ti ti-arrow-left"></i> Back</button>
+        <span class="sim-nav-step" id="citi-nav-label">Step 1 of 6</span>
+        <button class="sim-nav-btn next-citi" id="citi-next" onclick="citiNav(1)">Next <i class="ti ti-arrow-right"></i></button>
+      </div>
+    </div><!-- browser -->
+
+    <div class="fact-strip">
+      <div class="fact-strip-title">Citi ThankYou Quick Facts</div>
+      <div class="fact-grid">
+        <div class="fact-item"><div class="fact-item-title">Transfer ratio</div><div class="fact-item-body">1:1 to most partners. A few hotel partners are at 1,000:500.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Speed</div><div class="fact-item-body">24-72 hours for most transfers. The slowest of the major banks. Plan ahead.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Pooling</div><div class="fact-item-body">Citi Double Cash points can be pooled into a Citi Premier account to unlock airline transfers.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Best partners</div><div class="fact-item-body">Turkish Airlines Miles&amp;Smiles, Qatar Avios, Flying Blue, Singapore KrisFlyer.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Turkish sweet spot</div><div class="fact-item-body">45,000 Miles&amp;Smiles books United or Lufthansa business class to Europe. Worth 2-3x more than using Citi points directly.</div></div>
+        <div class="fact-item"><div class="fact-item-title">Where to find it</div><div class="fact-item-body">Log in to thankyou.com or citi.com, click ThankYou Points, then Transfer to Airlines.</div></div>
+      </div>
+    </div>
+
+  </div><!-- sim-citi -->
+
+  </div><!-- sim-main -->
+
+</div><!-- page-wrap -->
+
+<script>
+function showSim() {
+  document.getElementById('intro-screen').classList.remove('visible');
+  document.getElementById('sim-main').classList.add('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+// ── BANK TAB SWITCH ──────────────────────────────────
+function switchBank(bank) {
+  document.querySelectorAll('.bank-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sim-wrap').forEach(s => s.classList.remove('active'));
+  document.querySelector('.bank-tab.' + bank).classList.add('active');
+  document.getElementById('sim-' + bank).classList.add('active');
+}
+
+// ── PARTNER SELECT ───────────────────────────────────
+function selectPartner(el, bank) {
+  el.closest('.mock-partner-grid').querySelectorAll('.mock-partner').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// Amex-specific: shows fee warning when Delta selected
+function selectAmexPartner(el, partner) {
+  selectPartner(el, 'amex');
+  const feeBox = document.getElementById('amex-delta-fee-box');
+  if (!feeBox) return;
+  feeBox.style.display = partner === 'delta' ? 'block' : 'none';
+}
+
+// ── GENERIC SIM CONTROLLER ───────────────────────────
+function buildSim(prefix, total) {
+  const urls = {
+    chase:  ['https://ultimaterewards.com', 'https://ultimaterewards.com/transfer', 'https://ultimaterewards.com/transfer/united', 'https://ultimaterewards.com/transfer/united/amount', 'https://ultimaterewards.com/transfer/united/review', 'https://ultimaterewards.com/transfer/united/confirmed'],
+    amex:   ['https://americanexpress.com/rewards', 'https://americanexpress.com/rewards/transfer', 'https://americanexpress.com/rewards/transfer/aeroplan', 'https://americanexpress.com/rewards/transfer/aeroplan/amount', 'https://americanexpress.com/rewards/transfer/aeroplan/review', 'https://americanexpress.com/rewards/transfer/aeroplan/confirmed'],
+
+  bilt:  ['https://biltrewards.com','https://biltrewards.com/transfer','https://biltrewards.com/transfer/united','https://biltrewards.com/transfer/united/amount','https://biltrewards.com/transfer/united/review','https://biltrewards.com/transfer/united/confirmed'],
+  citi:  ['https://thankyou.com','https://thankyou.com/transfer','https://thankyou.com/transfer/turkish','https://thankyou.com/transfer/turkish/amount','https://thankyou.com/transfer/turkish/review','https://thankyou.com/transfer/turkish/confirmed'],
+    capone: ['https://capitalone.com/card/rewards', 'https://capitalone.com/card/rewards/transfer', 'https://capitalone.com/card/rewards/transfer/turkish', 'https://capitalone.com/card/rewards/transfer/turkish/amount', 'https://capitalone.com/card/rewards/transfer/turkish/review', 'https://capitalone.com/card/rewards/transfer/turkish/confirmed'],
+  };
+
+  const stepLabels = ['Select your card', 'Choose a partner', 'Link your account', 'Enter amount', 'Review transfer', 'Transfer complete'];
+
+  let cur = 0;
+
+  function update() {
+    // screens
+    for (let i = 1; i <= total; i++) {
+      const el = document.getElementById(prefix + '-s' + i);
+      if (el) el.classList.toggle('active', i - 1 === cur);
+    }
+    // dots
+    const dotsEl = document.getElementById(prefix + '-dots');
+    dotsEl.innerHTML = '';
+    for (let i = 0; i < total; i++) {
+      const d = document.createElement('div');
+      d.className = 'sim-dot' + (i < cur ? ' done' : i === cur ? ' active' : '');
+      dotsEl.appendChild(d);
+    }
+    // labels
+    document.getElementById(prefix + '-step-label').textContent = 'Step ' + (cur + 1) + ' of ' + total;
+    document.getElementById(prefix + '-nav-label').textContent = stepLabels[cur] || '';
+    // url
+    const urlEl = document.getElementById(prefix + '-url');
+    if (urlEl && urls[prefix]) urlEl.textContent = urls[prefix][cur] || '';
+    // prev
+    document.getElementById(prefix + '-prev').disabled = cur === 0;
+    // next
+    const nextBtn = document.getElementById(prefix + '-next');
+    if (cur === total - 1) {
+      nextBtn.textContent = 'Start Over';
+      nextBtn.onclick = () => { cur = 0; update(); };
+    } else {
+      nextBtn.innerHTML = 'Next <i class="ti ti-arrow-right"></i>';
+      nextBtn.onclick = () => { if (cur < total - 1) { cur++; update(); } };
+    }
+  }
+
+  window[prefix + 'Nav'] = function(dir) {
+    cur = Math.max(0, Math.min(total - 1, cur + dir));
+    update();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  update();
+}
+
+function switchChaseMode(mode) {
+  document.querySelectorAll('.chase-mode-tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && mode === 'combine') || (i === 1 && mode === 'transfer'));
+  });
+  document.getElementById('chase-panel-combine').classList.toggle('active', mode === 'combine');
+  document.getElementById('chase-panel-transfer').classList.toggle('active', mode === 'transfer');
+}
+
+buildSim('chase',  6);
+buildSim('amex',   6);
+buildSim('capone', 6);
+buildSim('bilt',   6);
+buildSim('citi',   6);
+
+// ── COMBINE CARD DATA ────────────────────────────────
+const CHASE_CARDS = {
+  cfu: { name: 'Freedom Unlimited', last4: '2215', pts: 12890 },
+  cff: { name: 'Freedom Flex',      last4: '9043', pts: 8340  },
+  csp: { name: 'Sapphire Preferred',last4: '7391', pts: 87450 },
+  csr: { name: 'Sapphire Reserve',  last4: '4872', pts: 45230 },
+};
+
+function fmt(n) { return Number(n).toLocaleString(); }
+
+function getFromCard()  { return CHASE_CARDS[document.getElementById('combine-from')?.value || 'cfu']; }
+function getToCard()    { return CHASE_CARDS[document.getElementById('combine-to')?.value   || 'csp']; }
+function getCombineAmt(){ return Math.max(0, parseInt(document.getElementById('combine-amt')?.value) || 0); }
+
+function setAllPoints() {
+  const f = getFromCard();
+  const el = document.getElementById('combine-amt');
+  if (el) { el.value = f.pts; updateCombinePreview(); }
+}
+
+function updateCombinePreview() {
+  const f   = getFromCard();
+  const t   = getToCard();
+  const amt = Math.min(getCombineAmt(), f.pts);
+  const fromAfter = f.pts - amt;
+  const toAfter   = t.pts + amt;
+
+  // live preview (s2)
+  const pa = document.getElementById('prev-amt');      if (pa) pa.textContent = fmt(amt);
+  const pf = document.getElementById('prev-from-after'); if (pf) pf.textContent = fmt(fromAfter) + ' pts';
+  const pt = document.getElementById('prev-to-after'); if (pt) pt.textContent = fmt(toAfter) + ' pts';
+
+  // review screen (s3)
+  const fromLabel = f.name + ' ••••' + f.last4;
+  const toLabel   = t.name + ' ••••' + t.last4;
+  const rf = document.getElementById('rev-from');      if (rf) rf.textContent = fromLabel;
+  const rt = document.getElementById('rev-to');        if (rt) rt.textContent = toLabel;
+  const ra = document.getElementById('rev-amt');       if (ra) ra.textContent = fmt(amt) + ' pts';
+  const rfa= document.getElementById('rev-from-after');if (rfa) rfa.textContent = fmt(fromAfter) + ' pts';
+  const rta= document.getElementById('rev-to-after');  if (rta) rta.textContent = fmt(toAfter) + ' pts';
+
+  // success screen (s4)
+  const ss = document.getElementById('combine-success-sub');
+  if (ss) ss.innerHTML = `Your ${fmt(amt)} ${f.name} points are now in your ${t.name}.<br>Ready to transfer to an airline.`;
+  const ca = document.getElementById('conf-amt');  if (ca) ca.textContent = fmt(amt) + ' pts';
+  const cf = document.getElementById('conf-from'); if (cf) cf.textContent = fromLabel;
+  const cto= document.getElementById('conf-to');   if (cto) cto.textContent = toLabel;
+  const cb = document.getElementById('conf-new-bal'); if (cb) cb.textContent = fmt(toAfter) + ' pts';
+}
+
+// combine sim
+(function() {
+  const prefix = 'combine';
+  const total = 4;
+  const urls = [
+    'https://ultimaterewards.com',
+    'https://ultimaterewards.com/combine',
+    'https://ultimaterewards.com/combine/review',
+    'https://ultimaterewards.com/combine/confirmed'
+  ];
+  const labels = ['See your cards', 'Choose cards & amount', 'Review', 'Done'];
+  let cur = 0;
+  function update() {
+    for (let i = 1; i <= total; i++) {
+      const el = document.getElementById(prefix + '-s' + i);
+      if (el) el.classList.toggle('active', i - 1 === cur);
+    }
+    // populate review/success when landing on those screens
+    if (cur >= 1) updateCombinePreview();
+
+    const dotsEl = document.getElementById(prefix + '-dots');
+    dotsEl.innerHTML = '';
+    for (let i = 0; i < total; i++) {
+      const d = document.createElement('div');
+      d.className = 'sim-dot' + (i < cur ? ' done' : i === cur ? ' active' : '');
+      dotsEl.appendChild(d);
+    }
+    document.getElementById(prefix + '-step-label').textContent = 'Step ' + (cur + 1) + ' of ' + total;
+    document.getElementById(prefix + '-nav-label').textContent = labels[cur] || '';
+    document.getElementById(prefix + '-url').textContent = urls[cur] || '';
+    document.getElementById(prefix + '-prev').disabled = cur === 0;
+    const nextBtn = document.getElementById(prefix + '-next');
+    if (cur === total - 1) {
+      nextBtn.textContent = 'Start Over';
+      nextBtn.onclick = () => { cur = 0; update(); };
+    } else {
+      nextBtn.innerHTML = 'Next <i class="ti ti-arrow-right"></i>';
+      nextBtn.onclick = () => { if (cur < total - 1) { cur++; update(); } };
+    }
+  }
+  window.combineNav = function(dir) {
+    cur = Math.max(0, Math.min(total - 1, cur + dir));
+    update();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  update();
+})();
+
+</script>
+</body>
+</html>
