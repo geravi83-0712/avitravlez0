@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AviTravelz: Points Strategy Builder</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f9ff; color: #1e293b; min-height: 100vh; }
+
+  /* HEADER */
+  .site-header { background: #0c4a6e; color: white; padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
+  .site-logo { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  .site-logo span { color: #38bdf8; }
+  .site-tagline { font-size: 12px; color: #7dd3fc; margin-left: auto; }
+
+  .page-wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  /* INTRO SCREEN */
+  .intro-screen { display: none; }
+  .intro-screen.visible { display: block; }
+  .sim-main { display: none; }
+  .sim-main.visible { display: block; }
+
+  .intro-card { background: white; border-radius: 16px; padding: 28px 24px; box-shadow: 0 4px 24px rgba(0,0,0,.08); max-width: 600px; margin: 0 auto; }
+  .intro-title { font-size: 22px; font-weight: 800; color: #0c4a6e; margin-bottom: 6px; }
+  .intro-sub { font-size: 13px; color: #64748b; line-height: 1.65; margin-bottom: 20px; }
+  .intro-disclaimer { background: #fefce8; border: 1.5px solid #fde047; border-radius: 10px; padding: 12px 16px; font-size: 12px; color: #713f12; line-height: 1.6; margin-bottom: 20px; }
+  .intro-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .intro-step { display: flex; gap: 12px; align-items: flex-start; }
+  .intro-step-num { width: 24px; height: 24px; border-radius: 50%; background: #0ea5e9; color: white; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .intro-step-text { font-size: 13px; color: #475569; line-height: 1.55; }
+  .intro-start-btn { width: 100%; background: #0c4a6e; color: white; border: none; border-radius: 10px; padding: 14px; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background .15s; }
+  .intro-start-btn:hover { background: #0e5d8a; }
+  .intro-privacy { font-size: 11px; color: #94a3b8; text-align: center; margin-top: 10px; line-height: 1.5; }
+
+  /* MAIN TOOL */
+  .page-title { font-size: 22px; font-weight: 800; color: #0c4a6e; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: #64748b; margin-bottom: 20px; line-height: 1.5; }
+
+  /* TABS */
+  .main-tabs { display: flex; gap: 4px; margin-bottom: 24px; background: #e2e8f0; border-radius: 10px; padding: 4px; }
+  .main-tab { flex: 1; padding: 9px 16px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; color: #64748b; transition: all .15s; }
+  .main-tab.active { background: white; color: #0c4a6e; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* SECTION LABELS */
+  .section-label { font-size: 12px; font-weight: 800; color: #0c4a6e; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+
+  /* CARD SELECTOR GRID */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 10px; margin-bottom: 28px; }
+  .card-toggle { border: 2px solid #e2e8f0; border-radius: 12px; overflow: hidden; cursor: pointer; transition: border-color .15s, box-shadow .15s; background: white; text-align: left; user-select: none; }
+  .card-toggle:hover { border-color: #94a3b8; }
+  .card-toggle.selected { border-color: var(--bank-color); box-shadow: 0 0 0 3px color-mix(in srgb, var(--bank-color) 15%, transparent); }
+  .card-toggle-bar { height: 6px; background: var(--bank-color); }
+  .card-toggle-body { padding: 10px 12px; }
+  .card-toggle-row { display: flex; justify-content: space-between; align-items: flex-start; }
+  .card-toggle-bank { font-size: 10px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 3px; }
+  .card-toggle-name { font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 6px; line-height: 1.3; }
+  .card-toggle-fee { font-size: 11px; color: #64748b; }
+  .card-toggle-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 11px; color: transparent; transition: all .15s; margin-top: 2px; }
+  .card-toggle.selected .card-toggle-check { background: var(--bank-color); border-color: var(--bank-color); color: white; }
+
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 48px 20px; color: #94a3b8; font-size: 13px; line-height: 1.6; }
+  .empty-state i { font-size: 36px; display: block; margin-bottom: 10px; color: #cbd5e1; }
+
+  /* RESULTS */
+  .results-block { margin-bottom: 28px; }
+  .results-block-title { font-size: 14px; font-weight: 800; color: #0c4a6e; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .results-block-title i { font-size: 18px; }
+  .count-badge { background: #0ea5e9; color: white; border-radius: 20px; padding: 2px 9px; font-size: 11px; font-weight: 700; }
+
+  /* PARTNER CHIPS */
+  .partner-group-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .4px; margin: 12px 0 7px; }
+  .partner-group-label:first-child { margin-top: 0; }
+  .chips-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+  .partner-chip { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; border: 1.5px solid #86efac; background: #f0fdf4; color: #15803d; }
+  .partner-chip i { font-size: 12px; color: #22c55e; }
+
+  /* GAP CARDS */
+  .gap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  .gap-card { background: white; border: 1.5px solid #fca5a5; border-radius: 10px; padding: 13px 14px; }
+  .gap-card-name { font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 5px; }
+  .gap-card-why { font-size: 11px; color: #64748b; line-height: 1.55; margin-bottom: 7px; }
+  .gap-card-via { font-size: 10px; font-weight: 700; color: #dc2626; }
+
+  /* ALL CLEAR */
+  .all-clear { background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 20px; text-align: center; }
+  .all-clear i { font-size: 30px; color: #22c55e; display: block; margin-bottom: 6px; }
+  .all-clear-title { font-size: 14px; font-weight: 800; color: #15803d; margin-bottom: 4px; }
+  .all-clear-sub { font-size: 12px; color: #475569; }
+
+  /* RECOMMENDATIONS */
+  .rec-list { display: flex; flex-direction: column; gap: 10px; }
+  .rec-card { background: white; border: 1.5px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
+  .rec-card-stripe { height: 5px; }
+  .rec-card-body { padding: 14px 16px; }
+  .rec-card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+  .rec-card-info { flex: 1; }
+  .rec-card-bankname { font-size: 10px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 2px; }
+  .rec-card-name { font-size: 14px; font-weight: 800; color: #1e293b; margin-bottom: 2px; }
+  .rec-card-fee { font-size: 12px; color: #64748b; }
+  .new-badge { background: #f0fdf4; border: 1.5px solid #86efac; color: #15803d; border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+  .rec-unlocks { font-size: 12px; color: #475569; line-height: 1.6; margin-bottom: 6px; }
+  .rec-unlocks strong { color: #1e293b; }
+  .rec-tagline { font-size: 11px; color: #94a3b8; line-height: 1.5; font-style: italic; }
+
+  /* DISCLAIMER */
+  .disclaimer-bar { background: #fefce8; border: 1.5px solid #fde047; border-radius: 10px; padding: 10px 14px; font-size: 11px; color: #713f12; margin-bottom: 20px; line-height: 1.6; }
+
+  /* CARD GUIDE */
+  .guide-card { background: white; border: 1.5px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
+  .guide-card-header { display: flex; align-items: center; gap: 14px; padding: 14px 16px; cursor: pointer; }
+  .guide-card-header:hover { background: #f8fafc; }
+  .guide-color-bar { width: 5px; height: 46px; border-radius: 4px; flex-shrink: 0; }
+  .guide-card-meta { flex: 1; }
+  .guide-card-bankname { font-size: 10px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 2px; }
+  .guide-card-name { font-size: 14px; font-weight: 800; color: #1e293b; }
+  .guide-card-fee { font-size: 12px; color: #64748b; font-weight: 600; white-space: nowrap; margin-right: 4px; }
+  .guide-chevron { font-size: 18px; color: #94a3b8; transition: transform .2s; flex-shrink: 0; }
+  .guide-card-header.open .guide-chevron { transform: rotate(180deg); }
+  .guide-detail { display: none; padding: 0 16px 16px 16px; border-top: 1px solid #f1f5f9; }
+  .guide-detail.open { display: block; }
+  .guide-detail-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .4px; margin: 12px 0 6px; }
+  .guide-tagline { font-size: 12px; color: #64748b; line-height: 1.55; padding-top: 12px; }
+  .earn-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+  .earn-badge { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 700; }
+  .earn-badge .earn-cat { font-weight: 400; color: #64748b; }
+  .pill-sm { display: inline-block; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 20px; padding: 3px 8px; font-size: 10px; color: #475569; margin: 2px; }
+
+  @media (max-width: 600px) {
+    .card-grid { grid-template-columns: repeat(2, 1fr); }
+    .gap-grid { grid-template-columns: 1fr; }
+    .main-tab { font-size: 12px; padding: 8px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-logo">Avi<span>Travelz</span></div>
+  <div class="site-tagline">Points Strategy Builder</div>
+</header>
+
+<div class="page-wrap">
+
+  <!-- ── INTRO SCREEN ── -->
+  <div class="intro-screen visible" id="intro-screen">
+    <div class="intro-card">
+      <div class="intro-title">Points Strategy Builder</div>
+      <div class="intro-sub">Not all travel cards unlock the same programs. This tool maps out exactly which airline and hotel loyalty programs your cards can reach, spots the gaps that cost you the most, and shows you which one card would fix the biggest holes in your setup.</div>
+
+      <div class="intro-disclaimer">
+        <strong>Good to know:</strong> Transfer partner lists and annual fees change. This tool reflects data as of mid-2026. Always verify on your bank's website before planning a real redemption.
+      </div>
+
+      <p style="font-size:12px;font-weight:800;color:#1e293b;margin-bottom:12px;">What this tool does</p>
+      <div class="intro-steps">
+        <div class="intro-step">
+          <div class="intro-step-num">1</div>
+          <div class="intro-step-text">You select the travel cards you carry. Pick as many as you want.</div>
+        </div>
+        <div class="intro-step">
+          <div class="intro-step-num">2</div>
+          <div class="intro-step-text">The tool maps every airline and hotel loyalty program you can currently reach through transfers.</div>
+        </div>
+        <div class="intro-step">
+          <div class="intro-step-num">3</div>
+          <div class="intro-step-text">It calls out the notable gaps and explains why each one actually matters for award travel.</div>
+        </div>
+        <div class="intro-step">
+          <div class="intro-step-num">4</div>
+          <div class="intro-step-text">It recommends the top 2-3 cards that would unlock the most programs you are missing right now.</div>
+        </div>
+      </div>
+
+      <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#475569;line-height:1.6;">
+        <strong style="color:#0c4a6e;">Flip to the Card Guide tab</strong> anytime to see earning rates by spending category for every card in the tool. Useful when you are trying to figure out which card to put on what purchase.
+      </div>
+
+      <button class="intro-start-btn" onclick="showTool()"><i class="ti ti-player-play"></i> Start Building My Strategy</button>
+      <p class="intro-privacy">Nothing you enter leaves your browser. No accounts, no data stored.</p>
+    </div>
+  </div>
+
+  <!-- ── MAIN TOOL ── -->
+  <div class="sim-main" id="sim-main">
+    <button onclick="goHome()" style="display:inline-flex;align-items:center;gap:6px;background:white;border:1.5px solid #e2e8f0;border-radius:8px;color:#475569;font-size:12px;font-weight:600;cursor:pointer;padding:7px 12px;margin-bottom:16px;transition:all .15s;" onmouseover="this.style.borderColor='#94a3b8'" onmouseout="this.style.borderColor='#e2e8f0'"><i class="ti ti-arrow-left" style="font-size:14px;"></i> Back to intro</button>
+    <div class="page-title">Points Strategy Builder</div>
+    <div class="page-sub">Select the travel cards you carry. See every program you can reach, what you are missing, and which card plugs the biggest holes.</div>
+
+    <div class="main-tabs">
+      <button class="main-tab active" onclick="switchTab('strategy')"><i class="ti ti-cards" style="margin-right:5px;font-size:14px;"></i>My Cards</button>
+      <button class="main-tab" onclick="switchTab('guide')"><i class="ti ti-book-2" style="margin-right:5px;font-size:14px;"></i>Card Guide</button>
+    </div>
+
+    <!-- ── TAB 1: MY CARDS ── -->
+    <div id="tab-strategy" class="tab-content active">
+
+      <div class="disclaimer-bar">
+        <strong>Heads up:</strong> Partner programs change. This reflects data as of mid-2026. Verify on your bank's website before making any transfer decisions.
+      </div>
+
+      <div class="section-label">Select the cards you carry</div>
+      <div class="card-grid" id="card-grid"></div>
+
+      <div id="empty-state" class="empty-state">
+        <i class="ti ti-credit-card"></i>
+        Tap the cards above to see your full partner map.
+      </div>
+
+      <div id="results" style="display:none;">
+
+        <div class="results-block">
+          <div class="results-block-title">
+            <i class="ti ti-plane-departure"></i> Your transfer partners
+            <span class="count-badge" id="partner-count">0</span>
+          </div>
+          <div id="coverage-airlines"></div>
+          <div id="coverage-hotels"></div>
+        </div>
+
+        <div class="results-block" id="gaps-block">
+          <div class="results-block-title">
+            <i class="ti ti-alert-circle" style="color:#ef4444;"></i> Gaps worth knowing
+          </div>
+          <div id="gaps-display"></div>
+        </div>
+
+        <div class="results-block" id="recs-block">
+          <div class="results-block-title">
+            <i class="ti ti-sparkles" style="color:#f59e0b;"></i> Cards that would help
+          </div>
+          <div class="rec-list" id="recs-display"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── TAB 2: CARD GUIDE ── -->
+    <div id="tab-guide" class="tab-content">
+      <div class="section-label" style="margin-bottom:16px;">Spending categories and transfer partners by card</div>
+      <div id="guide-list"></div>
+    </div>
+
+  </div><!-- /sim-main -->
+</div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────────
+
+const PARTNERS = {
+  united:      { name: 'United MileagePlus',           type: 'airline' },
+  delta:       { name: 'Delta SkyMiles',               type: 'airline' },
+  american:    { name: 'American AAdvantage',          type: 'airline' },
+  alaska:      { name: 'Alaska Mileage Plan',          type: 'airline' },
+  southwest:   { name: 'Southwest Rapid Rewards',      type: 'airline' },
+  aeroplan:    { name: 'Air Canada Aeroplan',          type: 'airline' },
+  flying_blue: { name: 'Air France/KLM Flying Blue',   type: 'airline' },
+  ana:         { name: 'ANA Mileage Club',             type: 'airline' },
+  ba:          { name: 'British Airways Avios',        type: 'airline' },
+  cathay:      { name: 'Cathay Pacific Asia Miles',    type: 'airline' },
+  emirates:    { name: 'Emirates Skywards',            type: 'airline' },
+  iberia:      { name: 'Iberia Plus',                  type: 'airline' },
+  jetblue:     { name: 'JetBlue TrueBlue',             type: 'airline' },
+  qantas:      { name: 'Qantas Frequent Flyer',        type: 'airline' },
+  singapore:   { name: 'Singapore KrisFlyer',          type: 'airline' },
+  turkish:     { name: 'Turkish Miles&Smiles',         type: 'airline' },
+  virgin:      { name: 'Virgin Atlantic Flying Club',  type: 'airline' },
+  avianca:     { name: 'Avianca LifeMiles',            type: 'airline' },
+  aeromexico:  { name: 'AeroMexico Club Premier',      type: 'airline' },
+  aer_lingus:  { name: 'Aer Lingus AerClub',           type: 'airline' },
+  qatar:       { name: 'Qatar Airways Privilege Club',  type: 'airline' },
+  jal:         { name: 'Japan Airlines Mileage Bank',    type: 'airline' },
+  hyatt:       { name: 'World of Hyatt',               type: 'hotel' },
+  marriott:    { name: 'Marriott Bonvoy',              type: 'hotel' },
+  hilton:      { name: 'Hilton Honors',                type: 'hotel' },
+  ihg:         { name: 'IHG One Rewards',              type: 'hotel' },
+  wyndham:     { name: 'Wyndham Rewards',              type: 'hotel' },
+  choice:      { name: 'Choice Privileges',            type: 'hotel' },
+};
+
+const NOTABLE_GAPS = [
+  {
+    id: 'delta',
+    label: 'Delta SkyMiles',
+    why: 'Largest US airline with a huge domestic network. Only reachable via Amex.',
+    via: 'Any Amex MR card or any Bilt card',
+  },
+  {
+    id: 'american',
+    label: 'American AAdvantage',
+    why: 'Second largest US carrier. Chase and Amex do not transfer here at all. Citi added it as a ThankYou partner recently.',
+    via: 'Citi Strata Premier or Citi Strata Elite',
+  },
+  {
+    id: 'alaska',
+    label: 'Alaska Mileage Plan',
+    why: 'Unique partner network including oneworld airlines. Only one card family gets you here.',
+    via: 'Any Bilt card (the only option)',
+  },
+  {
+    id: 'southwest',
+    label: 'Southwest Rapid Rewards',
+    why: 'Best for domestic travel and the companion pass, which is worth hundreds per year.',
+    via: 'Chase Sapphire Preferred, Chase Sapphire Reserve, or any Bilt card',
+  },
+  {
+    id: 'ana',
+    label: 'ANA Mileage Club',
+    why: 'Top-rated Star Alliance program, especially known for Japan business class at low mileage costs.',
+    via: 'Amex Gold or Amex Platinum (the only option)',
+  },
+  {
+    id: 'hyatt',
+    label: 'World of Hyatt',
+    why: 'Widely considered the best hotel points program. Points go further here than Marriott or Hilton.',
+    via: 'Chase Sapphire Preferred, Reserve, or any Bilt card',
+  },
+  {
+    id: 'hilton',
+    label: 'Hilton Honors',
+    why: 'Largest hotel footprint worldwide. Only reachable through Amex.',
+    via: 'Any Amex MR card or any Bilt card',
+  },
+  {
+    id: 'turkish',
+    label: 'Turkish Miles&Smiles',
+    why: 'Some of the cheapest Star Alliance award rates out there, including United flights at low mileage costs.',
+    via: 'Capital One Venture/VentureX, any Bilt card, or Citi Strata Premier/Elite',
+  },
+  {
+    id: 'qatar',
+    label: 'Qatar Airways Privilege Club',
+    why: 'Consistently rated the world best airline. No path here from Chase or Amex at all.',
+    via: 'Capital One Venture/VentureX, any Bilt card, or Citi Strata Premier/Elite',
+  },
+  {
+    id: 'avianca',
+    label: 'Avianca LifeMiles',
+    why: 'Book United flights without fuel surcharges. Star Alliance access at strong rates.',
+    via: 'Amex, Capital One, Citi Strata Premier/Elite, or any Bilt card',
+  },
+];
+
+const CARDS = {
+  csp: {
+    name: 'Sapphire Preferred',
+    bank: 'Chase',
+    fee: 95,
+    color: '#0f4c8c',
+    tagline: 'The best starting point for most travelers. Covers Hyatt, United, Southwest, and more all in one card. Best value at the $95 price point.',
+    earning: [
+      { mult: '5x', cat: 'Chase Travel portal' },
+      { mult: '3x', cat: 'Dining' },
+      { mult: '2x', cat: 'Travel' },
+      { mult: '1x', cat: 'Everything else' },
+    ],
+    partners: ['united','aeroplan','ba','flying_blue','iberia','jetblue','singapore','southwest','virgin','aer_lingus','hyatt','marriott','ihg','wyndham'],
+  },
+  csr: {
+    name: 'Sapphire Reserve',
+    bank: 'Chase',
+    fee: 795,
+    color: '#0f4c8c',
+    tagline: 'Same transfer partners as the Sapphire Preferred. The $300 travel credit, lounge access, and Priority Pass help offset the $795 fee if you travel frequently.',
+    earning: [
+      { mult: '10x', cat: 'Chase Travel portal' },
+      { mult: '3x', cat: 'Dining' },
+      { mult: '3x', cat: 'Travel' },
+      { mult: '1x', cat: 'Everything else' },
+    ],
+    partners: ['united','aeroplan','ba','flying_blue','iberia','jetblue','singapore','southwest','virgin','aer_lingus','hyatt','marriott','ihg','wyndham'],
+  },
+  amex_green: {
+    name: 'Amex Green',
+    bank: 'American Express',
+    fee: 150,
+    color: '#4a7c59',
+    tagline: 'Entry-level Amex Membership Rewards card. Earns 3x on travel and dining. Same transfer partner access as the Gold and Platinum at the lowest Amex annual fee, including Delta, ANA, and Hilton.',
+    earning: [
+      { mult: '3x', cat: 'Travel (flights, hotels, transit, rideshare, gas)' },
+      { mult: '3x', cat: 'Dining' },
+      { mult: '1x', cat: 'Everything else' },
+    ],
+    partners: ['delta','aeroplan','flying_blue','ana','avianca','ba','cathay','aeromexico','emirates','iberia','jetblue','qantas','singapore','virgin','aer_lingus','hilton','marriott','choice'],
+  },
+  amex_gold: {
+    name: 'Amex Gold',
+    bank: 'American Express',
+    fee: 325,
+    color: '#b7860e',
+    tagline: 'Best card for dining and groceries. The only way to reach Delta and ANA. Hilton Honors is only accessible through Amex cards.',
+    earning: [
+      { mult: '4x', cat: 'Dining' },
+      { mult: '4x', cat: 'US Supermarkets' },
+      { mult: '3x', cat: 'Flights (booked direct)' },
+      { mult: '1x', cat: 'Everything else' },
+    ],
+    partners: ['delta','aeroplan','flying_blue','ana','avianca','ba','cathay','aeromexico','emirates','iberia','jetblue','qantas','singapore','virgin','aer_lingus','hilton','marriott','choice'],
+  },
+  amex_plat: {
+    name: 'Amex Platinum',
+    bank: 'American Express',
+    fee: 895,
+    color: '#b7860e',
+    tagline: 'Same partners as Amex Gold. Best for heavy flyers who earn 5x on flights and use the lounge access, travel credits, and hotel status that help offset the $895 fee.',
+    earning: [
+      { mult: '5x', cat: 'Flights (booked direct or via Amex Travel)' },
+      { mult: '5x', cat: 'Hotels via Amex Travel' },
+      { mult: '1x', cat: 'Everything else' },
+    ],
+    partners: ['delta','aeroplan','flying_blue','ana','avianca','ba','cathay','aeromexico','emirates','iberia','jetblue','qantas','singapore','virgin','aer_lingus','hilton','marriott','choice'],
+  },
+  venture: {
+    name: 'Venture',
+    bank: 'Capital One',
+    fee: 95,
+    color: '#cc0000',
+    tagline: 'Simple flat 2x on every purchase. Unlocks Turkish Miles&Smiles and Avianca LifeMiles, two programs most Chase and Amex setups miss entirely.',
+    earning: [
+      { mult: '2x', cat: 'All purchases' },
+    ],
+    partners: ['aeroplan','flying_blue','avianca','ba','cathay','emirates','singapore','turkish','virgin','jetblue','jal','qatar','aeromexico','wyndham','choice'],
+  },
+  venturex: {
+    name: 'VentureX',
+    bank: 'Capital One',
+    fee: 395,
+    color: '#cc0000',
+    tagline: 'Same transfer partners as the Venture. Adds lounge access and higher earn on the Capital One Travel portal. The $300 travel credit effectively brings the net fee to $95 for active travelers.',
+    earning: [
+      { mult: '10x', cat: 'Capital One Travel portal' },
+      { mult: '5x', cat: 'Hotels and car rentals via portal' },
+      { mult: '2x', cat: 'All purchases' },
+    ],
+    partners: ['aeroplan','flying_blue','avianca','ba','cathay','emirates','singapore','turkish','virgin','jetblue','jal','qatar','aeromexico','wyndham','choice'],
+  },
+  bilt_blue: {
+    name: 'Bilt Blue',
+    bank: 'Bilt',
+    fee: 0,
+    color: '#1a73e8',
+    tagline: 'Entry-level Bilt card with no annual fee. Earns on rent and unlocks the full Bilt transfer partner list including Alaska Mileage Plan and American AAdvantage.',
+    earning: [
+      { mult: '1.25x', cat: 'Rent and mortgage (no transaction fee)' },
+      { mult: '1x', cat: 'Everything else' },
+    ],
+    partners: ['alaska','united','aeroplan','ba','flying_blue','iberia','turkish','virgin','emirates','cathay','aer_lingus','avianca','southwest','jal','hyatt','ihg','marriott','hilton','wyndham'],
+  },
+  bilt_obsidian: {
+    name: 'Bilt Obsidian',
+    bank: 'Bilt',
+    fee: 95,
+    color: '#1e1e1e',
+    tagline: 'Best earning Bilt card for most people. Choose dining or groceries for 3x each year, earn 2x on travel. Same transfer partners as all Bilt cards.',
+    earning: [
+      { mult: '3x', cat: 'Dining or groceries (your choice each year)' },
+      { mult: '2x', cat: 'Travel' },
+      { mult: '1.25x', cat: 'Rent and mortgage (no transaction fee)' },
+      { mult: '1x', cat: 'Everything else' },
+    ],
+    partners: ['alaska','united','aeroplan','ba','flying_blue','iberia','turkish','virgin','emirates','cathay','aer_lingus','avianca','southwest','jal','hyatt','ihg','marriott','hilton','wyndham'],
+  },
+  bilt_palladium: {
+    name: 'Bilt Palladium',
+    bank: 'Bilt',
+    fee: 495,
+    color: '#6b6b7b',
+    tagline: 'Premium Bilt card. Earns 3x dining, 2x on everyday spending. Includes a $400 Bilt Travel hotel credit and $200 Bilt Cash annually. Same transfer partners as all Bilt cards.',
+    earning: [
+      { mult: '3x', cat: 'Dining' },
+      { mult: '2x', cat: 'Everyday spending (excluding rent)' },
+      { mult: '1.25x', cat: 'Rent and mortgage (no transaction fee)' },
+    ],
+    partners: ['alaska','united','aeroplan','ba','flying_blue','iberia','turkish','virgin','emirates','cathay','aer_lingus','avianca','southwest','jal','hyatt','ihg','marriott','hilton','wyndham'],
+  },
+  citi_strata: {
+    name: 'Citi Strata Premier',
+    bank: 'Citi',
+    fee: 95,
+    color: '#003087',
+    tagline: 'Earns 3x across the most everyday categories of any card here. Strong complement to a Chase or Amex setup. Now includes American AAdvantage as a transfer partner.',
+    earning: [
+      { mult: '3x', cat: 'Air travel' },
+      { mult: '3x', cat: 'Hotels' },
+      { mult: '3x', cat: 'Dining' },
+      { mult: '3x', cat: 'Groceries' },
+      { mult: '3x', cat: 'Gas' },
+      { mult: '1x', cat: 'Everything else' },
+    ],
+    partners: ['american','flying_blue','avianca','cathay','emirates','jetblue','qantas','singapore','turkish','virgin','aeromexico','qatar','wyndham','choice'],
+  },
+  citi_elite: {
+    name: 'Citi Strata Elite',
+    bank: 'Citi',
+    fee: 469,
+    color: '#003087',
+    tagline: 'Premium Citi card with 4 Admirals Club lounge passes per year. Higher earn on travel bookings. Same ThankYou transfer partners as the Strata Premier including American AAdvantage.',
+    earning: [
+      { mult: '12x', cat: 'Hotels, car rentals, attractions via Citi Travel' },
+      { mult: '6x', cat: 'Air travel via Citi Travel' },
+      { mult: '6x', cat: 'Restaurants on Citi Nights (Fri/Sat evenings)' },
+      { mult: '3x', cat: 'Dining all other times' },
+      { mult: '1.5x', cat: 'Everything else' },
+    ],
+    partners: ['american','flying_blue','avianca','cathay','emirates','jetblue','qantas','singapore','turkish','virgin','aeromexico','qatar','wyndham','choice'],
+  },
+};
+
+// ── STATE ───────────────────────────────────────────────────────────────────
+const selectedCards = new Set();
+
+// ── INTRO ───────────────────────────────────────────────────────────────────
+function showTool() {
+  document.getElementById('intro-screen').classList.remove('visible');
+  document.getElementById('sim-main').classList.add('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goHome() {
+  document.getElementById('sim-main').classList.remove('visible');
+  document.getElementById('intro-screen').classList.add('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── BUILD CARD GRID ─────────────────────────────────────────────────────────
+function buildCardGrid() {
+  const grid = document.getElementById('card-grid');
+  Object.entries(CARDS).forEach(([id, card]) => {
+    const el = document.createElement('div');
+    el.className = 'card-toggle';
+    el.style.setProperty('--bank-color', card.color);
+    el.dataset.id = id;
+    el.innerHTML = `
+      <div class="card-toggle-bar"></div>
+      <div class="card-toggle-body">
+        <div class="card-toggle-row">
+          <div>
+            <div class="card-toggle-bank">${card.bank}</div>
+            <div class="card-toggle-name">${card.name}</div>
+            <div class="card-toggle-fee">${card.fee === 0 ? 'No annual fee' : '$' + card.fee + '/yr'}</div>
+          </div>
+          <div class="card-toggle-check"><i class="ti ti-check"></i></div>
+        </div>
+      </div>
+    `;
+    el.addEventListener('click', () => toggleCard(id, el));
+    grid.appendChild(el);
+  });
+}
+
+function toggleCard(id, el) {
+  if (selectedCards.has(id)) {
+    selectedCards.delete(id);
+    el.classList.remove('selected');
+  } else {
+    selectedCards.add(id);
+    el.classList.add('selected');
+  }
+  updateResults();
+}
+
+// ── UPDATE RESULTS ──────────────────────────────────────────────────────────
+function getPartnerSet(cardIds) {
+  const s = new Set();
+  cardIds.forEach(id => CARDS[id].partners.forEach(p => s.add(p)));
+  return s;
+}
+
+function updateResults() {
+  const resultsDiv = document.getElementById('results');
+  const emptyDiv = document.getElementById('empty-state');
+
+  if (selectedCards.size === 0) {
+    resultsDiv.style.display = 'none';
+    emptyDiv.style.display = 'block';
+    return;
+  }
+
+  resultsDiv.style.display = 'block';
+  emptyDiv.style.display = 'none';
+
+  const covered = getPartnerSet([...selectedCards]);
+  document.getElementById('partner-count').textContent = covered.size;
+
+  // Airlines
+  const airlines = Object.entries(PARTNERS).filter(([k, v]) => v.type === 'airline' && covered.has(k));
+  document.getElementById('coverage-airlines').innerHTML = `
+    <div class="partner-group-label">Airlines (${airlines.length})</div>
+    <div class="chips-wrap">
+      ${airlines.map(([k, v]) => `<span class="partner-chip"><i class="ti ti-check"></i>${v.name}</span>`).join('')}
+    </div>
+  `;
+
+  // Hotels
+  const hotels = Object.entries(PARTNERS).filter(([k, v]) => v.type === 'hotel' && covered.has(k));
+  document.getElementById('coverage-hotels').innerHTML = `
+    <div class="partner-group-label" style="margin-top:12px;">Hotels (${hotels.length})</div>
+    <div class="chips-wrap">
+      ${hotels.map(([k, v]) => `<span class="partner-chip"><i class="ti ti-check"></i>${v.name}</span>`).join('')}
+    </div>
+  `;
+
+  // Notable gaps
+  const gaps = NOTABLE_GAPS.filter(g => !covered.has(g.id));
+  const gapsDisplay = document.getElementById('gaps-display');
+  if (gaps.length === 0) {
+    gapsDisplay.innerHTML = `
+      <div class="all-clear">
+        <i class="ti ti-circle-check"></i>
+        <div class="all-clear-title">No major gaps</div>
+        <div class="all-clear-sub">Your cards cover every high-value program we track. Solid setup.</div>
+      </div>
+    `;
+  } else {
+    gapsDisplay.innerHTML = `<div class="gap-grid">${gaps.map(g => `
+      <div class="gap-card">
+        <div class="gap-card-name">${g.label}</div>
+        <div class="gap-card-why">${g.why}</div>
+        <div class="gap-card-via">How to unlock: ${g.via}</div>
+      </div>
+    `).join('')}</div>`;
+  }
+
+  // Recommendations
+  const unselected = Object.keys(CARDS).filter(id => !selectedCards.has(id));
+  const recs = unselected
+    .map(id => {
+      const card = CARDS[id];
+      const newPartners = card.partners.filter(p => !covered.has(p));
+      const newNotable = newPartners.filter(p => NOTABLE_GAPS.some(g => g.id === p));
+      return { id, card, newPartners, newNotable };
+    })
+    .filter(r => r.newPartners.length > 0)
+    .sort((a, b) => b.newNotable.length - a.newNotable.length || b.newPartners.length - a.newPartners.length)
+    .slice(0, 3);
+
+  const recsBlock = document.getElementById('recs-block');
+  const recsDisplay = document.getElementById('recs-display');
+
+  if (recs.length === 0) {
+    recsBlock.style.display = 'none';
+  } else {
+    recsBlock.style.display = 'block';
+    recsDisplay.innerHTML = recs.map(({ card, newPartners, newNotable }) => {
+      const notableNames = newNotable.map(p => PARTNERS[p].name);
+      const otherNames = newPartners.filter(p => !newNotable.includes(p)).map(p => PARTNERS[p].name);
+      const allNew = [...notableNames, ...otherNames];
+      const displayList = allNew.slice(0, 5).join(', ') + (allNew.length > 5 ? ` and ${allNew.length - 5} more` : '');
+      return `
+        <div class="rec-card">
+          <div class="rec-card-stripe" style="background:${card.color};"></div>
+          <div class="rec-card-body">
+            <div class="rec-card-top">
+              <div class="rec-card-info">
+                <div class="rec-card-bankname">${card.bank}</div>
+                <div class="rec-card-name">${card.name}</div>
+                <div class="rec-card-fee">${card.fee === 0 ? 'No annual fee' : '$' + card.fee + '/yr'}</div>
+              </div>
+              <div class="new-badge">+${newPartners.length} new ${newPartners.length === 1 ? 'partner' : 'partners'}</div>
+            </div>
+            <div class="rec-unlocks"><strong>Unlocks:</strong> ${displayList}</div>
+            <div class="rec-tagline">${card.tagline}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+// ── CARD GUIDE ──────────────────────────────────────────────────────────────
+function buildGuideList() {
+  const list = document.getElementById('guide-list');
+  Object.entries(CARDS).forEach(([id, card]) => {
+    const airlines = card.partners.filter(p => PARTNERS[p] && PARTNERS[p].type === 'airline').map(p => PARTNERS[p].name);
+    const hotels = card.partners.filter(p => PARTNERS[p] && PARTNERS[p].type === 'hotel').map(p => PARTNERS[p].name);
+    const div = document.createElement('div');
+    div.className = 'guide-card';
+    div.innerHTML = `
+      <div class="guide-card-header" onclick="toggleGuide(this)">
+        <div class="guide-color-bar" style="background:${card.color};"></div>
+        <div class="guide-card-meta">
+          <div class="guide-card-bankname">${card.bank}</div>
+          <div class="guide-card-name">${card.name}</div>
+        </div>
+        <div class="guide-card-fee">${card.fee === 0 ? 'No annual fee' : '$' + card.fee + '/yr'}</div>
+        <i class="ti ti-chevron-down guide-chevron"></i>
+      </div>
+      <div class="guide-detail">
+        <div class="guide-tagline">${card.tagline}</div>
+        <div class="guide-detail-label">Spending categories</div>
+        <div class="earn-badges">
+          ${card.earning.map(e => `<span class="earn-badge"><strong>${e.mult}</strong> <span class="earn-cat">${e.cat}</span></span>`).join('')}
+        </div>
+        <div class="guide-detail-label">Airline partners (${airlines.length})</div>
+        <div>${airlines.map(n => `<span class="pill-sm">${n}</span>`).join('')}</div>
+        ${hotels.length > 0 ? `
+          <div class="guide-detail-label">Hotel partners (${hotels.length})</div>
+          <div>${hotels.map(n => `<span class="pill-sm">${n}</span>`).join('')}</div>
+        ` : ''}
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function toggleGuide(header) {
+  const detail = header.nextElementSibling;
+  const isOpen = detail.classList.contains('open');
+  header.classList.toggle('open', !isOpen);
+  detail.classList.toggle('open', !isOpen);
+}
+
+// ── TABS ────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.main-tab')[tab === 'strategy' ? 0 : 1].classList.add('active');
+}
+
+// ── INIT ────────────────────────────────────────────────────────────────────
+buildCardGrid();
+buildGuideList();
+</script>
+</body>
+</html>
